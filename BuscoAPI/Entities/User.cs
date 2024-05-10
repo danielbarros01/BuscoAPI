@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace BuscoAPI.Entities
 {
@@ -14,21 +16,23 @@ namespace BuscoAPI.Entities
         public string Username { get; set; }
         [Required]
         [EmailAddress]
-        public string Mail { get; set; }
+        public string Email { get; set; }
         [Required]
         [MinLength(6)]
         public string Password { get; set; }
         public DateTime Birthdate { get; set; }
         public string Country { get; set; }
         public string Province { get; set; }
+        public string Department { get; set; }
         public string City { get; set; }
         [Phone]
         public string Telephone { get; set; }
-        [StringLength(250)]
-        public string Description { get; set; }
-        public string? Image_path { get; set; }
-        public string? Token { get; set; }
-        public bool? Confirmed { get; set; }
+        [AllowNull]
+        [Column("Image_path")]
+        public string? Image { get; set; }
+        [Column("Verification_code")]
+        public int? VerificationCode { get; set; }
+        public bool? Confirmed { get; set; } = false;
         public string? Google_id { get; set; }
     }
 }
