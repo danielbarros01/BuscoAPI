@@ -54,10 +54,10 @@ namespace BuscoAPI.Controllers
                     var errors = new List<object>();
 
                     if (userMailExists)
-                        errors.Add(new ErrorInfo { Field = "email", Message = $"The email {userCreation.Email} already exists." });
+                        errors.Add(new ErrorInfo { Field = "email", Message = $"El email {userCreation.Email} ya existe." });
 
                     if (userUsernameExists)
-                        errors.Add(new ErrorInfo { Field = "username", Message = $"The username {userCreation.Username} already exists." });
+                        errors.Add(new ErrorInfo { Field = "username", Message = $"El nombre de usuario {userCreation.Username} ya existe." });
 
                     return BadRequest(errors);
                 }
@@ -80,14 +80,15 @@ namespace BuscoAPI.Controllers
                 var userToken = await TokenHelper.BuildToken(userCreation, context, configuration);
 
                 //Send code to user's email
-                var emailReq = SendEmails.BuildEmailVerificationCode(verificationCode);
+                var emailReq = SendEmails.BuildEmailVerificationCode(verificationCode, "register", user.Username);
                 emailReq.ToEmail = userCreation.Email;
                 emailService.SendEmail(emailReq);
 
                 //Return the token to the client
                 return userToken;
             }catch(Exception ex){
-                return StatusCode(500, $"An error occurred: {ex.Message}");
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
             }
         }
 
@@ -110,7 +111,8 @@ namespace BuscoAPI.Controllers
                 var userToken = await TokenHelper.BuildToken(user, context, configuration);
                 return userToken;
             }catch (Exception ex){
-                return StatusCode(500, $"An error occurred: {ex.Message}");
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
             }
         }
 
@@ -126,7 +128,7 @@ namespace BuscoAPI.Controllers
 
                 if(verificationCode.Code != user.VerificationCode)
                 {
-                    return BadRequest(new ErrorInfo{ Field = "Code", Message = "The code is incorrect"});
+                    return BadRequest(new ErrorInfo{ Field = "Code", Message = "El codigo es incorrecto"});
                 }
 
                 //User confirmed a the code is removed 
@@ -138,13 +140,79 @@ namespace BuscoAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
+            }
+        }
+
+
+        [HttpPatch("confirm-password-code")]
+        public async Task<ActionResult<UserToken>> ConfirmCodeForPassword([FromForm] String email, [FromForm] int code)
+        {
+            try
+            {
+                var user = await context.Users.FirstOrDefaultAsync(x => x.Email == email);
+                
+                if (user == null || code != user.VerificationCode)
+                {
+                    return BadRequest(new ErrorInfo { Field = "Code", Message = "El codigo es incorrecto" });
+                }
+
+                //Confirmo al usuario para saltar el paso que se confirme de nuevo
+                //Esto porque igualmente ya entro al correo por lo tanto es valido que es su correo
+                //Si el usuario ya estaba confirmado no altera nada
+                user.Confirmed = true;
+                user.VerificationCode = null;
+
+                await context.SaveChangesAsync();
+
+                //Mapeamos para poder usar el metodo BuildToken
+                var userMapper = mapper.Map<User, UserDTO>(user);
+                var userToken = await TokenHelper.BuildToken(userMapper, context, configuration);
+                return userToken;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
+            }
+        }
+
+
+        [HttpPatch("resend-code")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> ResendCode()
+        {
+            try
+            {
+                //Verify that the user exists
+                var userId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
+                var userDb = await context.Users.FirstOrDefaultAsync(x => x.Id == Int32.Parse(userId));
+                if (userDb == null) return Unauthorized();
+
+                //I created the random number to validate the email
+                var verificationCode = Helpers.Utility.RandomNumber(4);
+
+                userDb.VerificationCode = verificationCode;
+
+                //Send code to user's email
+                var emailReq = SendEmails.BuildEmailVerificationCode(verificationCode, "register", userDb.Username);
+                emailReq.ToEmail = userDb.Email;
+                emailService.SendEmail(emailReq);
+
+                await context.SaveChangesAsync();
+                return Ok();
+            }   
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
             }
         }
 
         [HttpPut]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult> Put([FromForm] UserPutDto user)
+        public async Task<ActionResult> Put([FromBody] UserPutDto user)
         {
             try
             {
@@ -152,7 +220,7 @@ namespace BuscoAPI.Controllers
                 var userDb = await context.Users.FirstOrDefaultAsync(x => x.Id == Int32.Parse(userId));
                 if (userDb == null) return Unauthorized();
                 if ((bool)!userDb.Confirmed) {
-                    return Unauthorized(new ErrorInfo { Field = "Confirmed", Message = "You must confirm your account" });
+                    return Unauthorized(new ErrorInfo { Field = "Confirmed", Message = "Debe confirmar su cuenta" });
                 }
 
                 //Para que solo se modifiquen los campos que son distintos entre user y userDb
@@ -165,13 +233,88 @@ namespace BuscoAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
             }
         }
 
+        [HttpGet("me")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult<User>> GetMyProfile()
+        {
+            var userId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
+            var user = await context.Users.FirstOrDefaultAsync(x => x.Id == Int32.Parse(userId));
+
+            if (user == null) return Unauthorized();
+            
+            var userMapper = mapper.Map<User, UserDTO>(user);
+            return Ok(userMapper);
+        }
+
+        [HttpPatch("send-code")]
+        public async Task<ActionResult> ResendCode([FromForm] String email){
+            try
+            {
+                var userDb = await context.Users.FirstOrDefaultAsync(x => x.Email == email);
+
+                //Devolvemos un Ok por un tema de seguridad
+                if (userDb == null) return Ok();
+
+                //I created the random number to validate the email
+                var verificationCode = Helpers.Utility.RandomNumber(4);
+                userDb.VerificationCode = verificationCode;
+
+                //Send code to user's email
+                var emailReq = SendEmails.BuildEmailVerificationCode(verificationCode, "recover-password", userDb.Username);
+                emailReq.ToEmail = userDb.Email;
+                emailService.SendEmail(emailReq);
+
+                await context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
+            }
+        }
+
+        [HttpPatch("change-password")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> ChangePassword([FromForm] String password)
+        {
+            //Validar password
+            if (string.IsNullOrEmpty(password) || password.Length < 6){
+                return BadRequest(new ErrorInfo { Field = "Contraseña", Message = "La contraseña es un campo requerido de 6 caracteres minimo." });
+            }
+
+            try
+            {
+                //Obtengo el id del usuario
+                var userId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
+                if (userId == null) return Unauthorized(new ErrorInfo { Field = "Contraseña", Message = "Hubo un problema al validar el usuario." });
+
+                //Obtengo al usuario de la base de datos
+                var userDb = await context.Users.FirstOrDefaultAsync(x => x.Id == Int32.Parse(userId));
+                if (userDb == null) return Unauthorized(new ErrorInfo { Field = "Contraseña", Message = "Hubo un problema al validar el usuario." });
+
+                //Actualizo el campo
+                userDb.Password = HashPassword.HashingPassword(password);
+                await context.SaveChangesAsync();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
+            }
+        }
+
+
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
-        public async Task<ActionResult<List<User>>> Get()
+        public async Task<ActionResult<List<User>>> GetUsers()
         {
             var users = await context.Users.ToListAsync();
             return Ok(users);

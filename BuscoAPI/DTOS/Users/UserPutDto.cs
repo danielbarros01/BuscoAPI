@@ -22,10 +22,6 @@ namespace BuscoAPI.DTOS.Users
         public string Province { get; set; }
         [Required]
         public string Department { get; set; }
-        [Required]
         public string City { get; set; }
-        [Required]
-        [Phone]
-        public string Telephone { get; set; }
     }
 }

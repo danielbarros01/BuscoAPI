@@ -9,6 +9,8 @@ namespace BuscoAPI.Helpers
         public AutoMapperProfiles() {
             CreateMap<UserPutDto, User>()
                 .ForMember(x => x.Image, options => options.Ignore());
+
+            CreateMap<User, UserDTO>();
         }
     }
 }

@@ -5,8 +5,25 @@ namespace BuscoAPI.Helpers
 {
     public class SendEmails
     {
-        public static MailRequest BuildEmailVerificationCode(int code)
+        public static MailRequest BuildEmailVerificationCode(int code, String type, String username)
         {
+            string title = "";
+            string message = "";
+            string bottomMessage = "";
+
+            if(type.Equals("recover-password", StringComparison.OrdinalIgnoreCase))
+            {
+                title = "Restablecer contraseña";
+                message = "Has solicitado restablecer tu contraseña en Busco App.";
+                bottomMessage = "Si tú no has solicitado restablecer tu contraseña, por favor, ignora este mensaje.";
+            }
+            else if(type.Equals("register", StringComparison.OrdinalIgnoreCase))
+            {
+                title = "Gracias por registrarte en Busco App!";
+                message = "Nos alegra que decidas unirte a nuestra comunidad.";
+                bottomMessage = "Si tú no has solicitado unirte a nuestra comunidad, por favor, ignora este mensaje.";
+            }
+
             // Convertir el código a cadena para determinar su longitud
             string codeString = code.ToString();
 
@@ -106,19 +123,19 @@ h1{
       <div class=""logo"">
         <img src=""https://i.pinimg.com/736x/1f/7b/2d/1f7b2d71ad83f993902a4390a21fdc7e.jpg"">
       </div>
-      <h1>Gracias por registrarte en Busco App!</h1>
+      <h1>"+title +@"</h1>
     </div>
     <div class=""main"">
       <div class=""main-text"">
-        <p>Hola username01!</p>
-        <p>Nos alegra que decidas unirte a nuestra comunidad.</p>
+        <p>Hola "+username+@"!</p>
+        <p>"+message+@"</p>
         <p>Aquí está tu código de verificación:</p>
       </div>
 " + numbersSection + @"
     </div>
   </div>
   
-  <p class=""last-message"">Si tú no has solicitado unirte a nuestra comunidad, por favor, ignora este mensaje.</p>
+  <p class=""last-message"">"+bottomMessage+@"</p>
     </div>
 </body>";
 

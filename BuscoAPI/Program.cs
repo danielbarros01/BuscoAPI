@@ -61,11 +61,13 @@ builder.Services.AddAuthentication(options =>
 //Configure email service
 builder.Services.AddScoped<IEmailService, EmailService>();
 
+builder.WebHost.UseUrls("http://localhost:5029", "http://192.168.100.7:5029", "http://*:5029");
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

@@ -9,6 +9,7 @@ using AutoMapper;
 using BuscoAPI.Services;
 using BuscoAPI.Helpers;
 using BuscoAPI.DTOS.Users;
+using System.Xml.Linq;
 
 namespace BuscoAPI.Controllers
 {
@@ -37,6 +38,7 @@ namespace BuscoAPI.Controllers
                 });
         }
 
+        //Este endpoint es para la web
         [HttpGet]
         [Route("signin-google")]
         public async Task<ActionResult<UserToken>> GoogleResponse()
@@ -74,7 +76,7 @@ namespace BuscoAPI.Controllers
                                 {
                                     Email = email,
                                     Username = googleAccountId,
-                                    Password = $"{Guid.NewGuid()}",
+                                    Password = HashPassword.HashingPassword($"{Guid.NewGuid()}"),
                                     Name = name,
                                     Lastname = surname,
                                     Confirmed = true,
@@ -96,6 +98,52 @@ namespace BuscoAPI.Controllers
                 return Unauthorized();
             }
             catch (Exception ex){
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
+
+        //Este endpoint es para android
+        [HttpPost("signin")]
+        public async Task<ActionResult<UserToken>> Login([FromBody] UserGoogleDTO userGoogle)
+        {
+            try
+            {
+                //verificar si existe el usuario
+                var googleIdExists = await context.Users.AnyAsync(x => x.Google_id == userGoogle.GoogleId || x.Email == userGoogle.Email);
+
+                //I create the user if it does not exist
+                if (!googleIdExists)
+                {
+                    var usernameExists = await context.Users.AnyAsync(x => x.Username == userGoogle.Username);
+                    
+                    while (usernameExists){
+                        userGoogle.Username = userGoogle.Username + Utility.GenerateRandomString(4);
+
+                        usernameExists = await context.Users.AnyAsync(x => x.Username == userGoogle.Username);
+                    }
+
+                    //Create user
+                    var user = new User
+                    {
+                        Email = userGoogle.Email,
+                        Username = userGoogle.Username,
+                        Password = HashPassword.HashingPassword($"{Guid.NewGuid()}"),
+                        Confirmed = true,
+                        Google_id = userGoogle.GoogleId
+                    };
+                    context.Users.Add(user);
+                    await context.SaveChangesAsync();
+                }
+
+                //Create user for BuildToken
+                var userInfo = new UserBasicInfoDTO { Email = userGoogle.Email, Username = userGoogle.Username };
+                var userToken = await TokenHelper.BuildToken(userInfo, context, configuration);
+
+                return userToken;
+            }
+            catch (Exception ex)
+            {
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
