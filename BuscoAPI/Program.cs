@@ -1,6 +1,7 @@
 
 using BuscoAPI;
 using BuscoAPI.Controllers;
+using BuscoAPI.Helpers;
 using BuscoAPI.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -8,12 +9,16 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles); //Esto indica que se debe ignorar cualquier referencia circular o relación cíclica durante la serialización JSON
+
 builder.Services.AddHttpContextAccessor();
 
 
@@ -64,6 +69,15 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.WebHost.UseUrls("http://localhost:5029", "http://192.168.100.7:5029", "http://*:5029");
 
 var app = builder.Build();
+
+// Seed the database
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    DbInitializer.Seed(context);
+}
+
 
 // Configure the HTTP request pipeline.
 
