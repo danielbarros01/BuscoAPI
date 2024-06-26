@@ -21,5 +21,6 @@ namespace BuscoAPI.DTOS.Users
         public bool? Confirmed { get; set; } = false;
         [Column("google_id")]
         public string? GoogleId { get; set; }
+
     }
 }

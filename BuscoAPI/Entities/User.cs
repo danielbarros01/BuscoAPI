@@ -32,5 +32,7 @@ namespace BuscoAPI.Entities
         public int? VerificationCode { get; set; }
         public bool? Confirmed { get; set; } = false;
         public string? Google_id { get; set; }
+
+        public virtual Worker Worker { get; set; }
     }
 }

@@ -48,7 +48,7 @@ namespace BuscoAPI.Controllers
             }
 
             var professions = await context.Categories
-                .Include(x => x.Proffesions)
+                .Include(x => x.Professions)
                 .FirstOrDefaultAsync(x => x.Id == categoryId);
 
             return Ok(professions);

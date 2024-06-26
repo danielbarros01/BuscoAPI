@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BuscoAPI.DTOS.Users;
+using BuscoAPI.DTOS.Worker;
 using BuscoAPI.Entities;
 
 namespace BuscoAPI.Helpers
@@ -11,6 +12,9 @@ namespace BuscoAPI.Helpers
                 .ForMember(x => x.Image, options => options.Ignore());
 
             CreateMap<User, UserDTO>();
+
+            //De WorkerCreationDTO a Worker
+            CreateMap<WorkerCreationDTO, Worker>();
         }
     }
 }
