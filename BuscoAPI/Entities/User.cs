@@ -33,6 +33,6 @@ namespace BuscoAPI.Entities
         public bool? Confirmed { get; set; } = false;
         public string? Google_id { get; set; }
 
-        public virtual Worker Worker { get; set; }
+        public Worker? Worker { get; set; }
     }
 }

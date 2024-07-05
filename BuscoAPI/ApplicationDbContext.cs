@@ -26,12 +26,6 @@ namespace BuscoAPI
             modelBuilder.Entity<Worker>()
                 .HasKey(x => new { x.UserId });
 
-            modelBuilder.Entity<Worker>()
-                .HasOne(w => w.User)  // Worker tiene una relación con User
-                .WithOne(u => u.Worker)  // User tiene una relación con Worker
-                .HasForeignKey<Worker>(w => w.UserId)  // Clave externa en Worker
-                .IsRequired();  // Es requerido, si es el caso
-
 
             base.OnModelCreating(modelBuilder);
         }

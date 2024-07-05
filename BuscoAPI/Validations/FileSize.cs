@@ -29,7 +29,7 @@ namespace BuscoAPI.Validations
             //To convert pesoMaxMb to Bytes
             if (formFile.Length > sizeMaxMb * 1024 * 1024)
             {
-                return new ValidationResult($"The weight of the file must not be greater than {sizeMaxMb}mb");
+                return new ValidationResult($"El peso del fichero no debe ser superior a {sizeMaxMb}mb");
             }
 
             //Sin errores

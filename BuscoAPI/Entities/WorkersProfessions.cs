@@ -9,7 +9,7 @@ namespace BuscoAPI.Entities
         [Column("Profession_id")]
         public int ProfessionId { get; set; }
 
-        public Worker Worker { get; set; }
+        //public Worker Worker { get; set; }
         public Profession Profession { get; set; }
     }
 }

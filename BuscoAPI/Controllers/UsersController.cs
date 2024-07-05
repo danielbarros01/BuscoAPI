@@ -243,7 +243,11 @@ namespace BuscoAPI.Controllers
         public async Task<ActionResult<User>> GetMyProfile()
         {
             var userId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
-            var user = await context.Users.FirstOrDefaultAsync(x => x.Id == Int32.Parse(userId));
+            var user = await context.Users
+                .Include(x => x.Worker)
+                .ThenInclude(x => x.WorkersProfessions)
+                .ThenInclude(x => x.Profession)
+                .FirstOrDefaultAsync(x => x.Id == Int32.Parse(userId));
 
             if (user == null) return Unauthorized();
             
@@ -311,6 +315,58 @@ namespace BuscoAPI.Controllers
             }
         }
 
+        [HttpPatch("me/image")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> ChangePhotoProfile([FromForm] UserImageDto userImageDto)
+        {
+            try
+            {
+                //Obtengo el id del usuario
+                var userId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
+                if (userId == null) return Unauthorized(new ErrorInfo { Field = "Contraseña", Message = "Hubo un problema al validar el usuario." });
+
+                //Obtengo al usuario de la base de datos
+                var userDb = await context.Users.FirstOrDefaultAsync(x => x.Id == Int32.Parse(userId));
+                if (userDb == null) return Unauthorized(new ErrorInfo { Field = "Contraseña", Message = "Hubo un problema al validar el usuario." });
+
+                //Guardar imagen
+                using (var memoryStream = new MemoryStream())
+                {
+                    await userImageDto.Image.CopyToAsync(memoryStream);
+                    var content = memoryStream.ToArray(); //datos en bytes
+                    var extension = Path.GetExtension(userImageDto.Image.FileName);
+
+                    if(userDb.Image != null)
+                    {
+                        userDb.Image = await fileStore.EditFile(
+                            content,
+                            extension,
+                            container,
+                            userDb.Image,
+                            userImageDto.Image.ContentType
+                         );
+                    }
+                    else
+                    {
+                        userDb.Image = await fileStore.SaveFile(
+                           content,
+                           extension,
+                           container,
+                           userImageDto.Image.ContentType
+                        );
+                    }
+                    
+                }
+
+                await context.SaveChangesAsync();
+
+                return Ok(new { image = userDb.Image });
+            }
+            catch (Exception ex) {
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
+            }
+        }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]

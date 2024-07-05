@@ -37,7 +37,7 @@ namespace BuscoAPI.Validations
             //Si no se encuentra entre los tipos validos
             if (!validTypes.Contains(formFile.ContentType))
             {
-                return new ValidationResult($"The file type must be one of the following:: {string.Join(", ", validTypes)}");
+                return new ValidationResult($"El tipo de archivo debe ser uno de los siguientes: {string.Join(", ", validTypes)}");
             }
 
             //Si no hay errores

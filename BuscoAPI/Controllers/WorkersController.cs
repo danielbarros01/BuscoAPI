@@ -44,14 +44,17 @@ namespace BuscoAPI.Controllers
                 workerMapper.UserId = user.Id; //Le pongo el Id del usuario
 
                 //Debo crear en la tabla Worker tiene cierta profesion
-                var WorkProfession = new WorkersProfessions
+                workerCreation.ProfessionsId.ForEach(professionId =>
                 {
-                    WorkerId = user.Id,
-                    ProfessionId = workerCreation.ProfessionId
-                };
-
-                //Creo
-                context.WorkersProfessions.Add(WorkProfession);
+                    //Creo las profesiones
+                    context.WorkersProfessions.Add(new WorkersProfessions
+                    {
+                        WorkerId = user.Id,
+                        ProfessionId = professionId
+                    });
+                });
+                
+                //Creo 
                 context.Workers.Add(workerMapper);
 
                 await context.SaveChangesAsync();
@@ -63,5 +66,35 @@ namespace BuscoAPI.Controllers
                 return StatusCode(500, "An error occurred");
             }
         }
+
+        [HttpPut]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> Edit([FromBody] WorkerCreationDTO workerDto)
+        {
+            //traer usuario
+            var worker = await GetEntity.GetWorker(HttpContext, context);
+            if (worker == null) return NotFound(new ErrorInfo { Field = "Error", Message ="No esta registrado como trabajador"});
+
+            var workersProfessions = await context.WorkersProfessions
+                .Where(x => x.WorkerId == worker.UserId)
+                .ToListAsync();
+
+
+            var newProfessions = workerDto.ProfessionsId;
+            //Agrego profesiones nuevas que no esten vinculadas
+            //Borro profesiones ya no vinculadas
+            await HelperProfessions.UpdateWorkerProfessions(worker.UserId, newProfessions, workersProfessions, context);
+
+            // Mapeo las propiedades del DTO al objeto worker existente
+            worker = mapper.Map(workerDto, worker);
+            // Marco el estado del objeto worker como modificado en el contexto de la base de datos
+            context.Entry(worker).State = EntityState.Modified;
+
+            await context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }
+
+
