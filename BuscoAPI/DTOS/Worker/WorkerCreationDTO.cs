@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using BuscoAPI.Validations;
 
 namespace BuscoAPI.DTOS.Worker
 {
@@ -25,6 +26,7 @@ namespace BuscoAPI.DTOS.Worker
         public String Description { get; set; }
 
         [Required]
+        [AtLeastOneElement("Debes seleccionar por lo menos una profesión.")]
         public List<int> ProfessionsId { get; set;}
         
     //public int ProfessionId { get; set; }

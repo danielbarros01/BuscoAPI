@@ -66,7 +66,7 @@ builder.Services.AddAuthentication(options =>
 //Configure email service
 builder.Services.AddScoped<IEmailService, EmailService>();
 
-builder.WebHost.UseUrls("http://localhost:5029", "http://192.168.100.7:5029", "http://*:5029");
+builder.WebHost.UseUrls("http://localhost:5029", "http://192.168.1.73:5029", "http://*:5029");
 
 var app = builder.Build();
 

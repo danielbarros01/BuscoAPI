@@ -94,6 +94,24 @@ namespace BuscoAPI.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<WorkerDTO>> Get(int id)
+        {
+            try
+            {
+                var worker = await context.Workers.FirstOrDefaultAsync(x => x.UserId == id);
+                if (worker == null) return NotFound();
+
+                return mapper.Map<WorkerDTO>(worker);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
+            }
+
+        }
     }
 }
 

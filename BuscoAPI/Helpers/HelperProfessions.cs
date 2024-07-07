@@ -29,7 +29,7 @@ namespace BuscoAPI.Helpers
             foreach (var workProfession in workersProfessions)
             {
                 //Existe la profesion en las nuevas profesiones?
-                var existProfession = newProfessions.Any(x => x == workProfession.WorkerId);
+                var existProfession = newProfessions.Any(x => x == workProfession.ProfessionId);
                 if (!existProfession)
                 {
                     context.WorkersProfessions.Remove(workProfession);
