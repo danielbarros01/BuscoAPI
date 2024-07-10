@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using BuscoAPI.DTOS.Worker;
 
 namespace BuscoAPI.DTOS.Users
 {

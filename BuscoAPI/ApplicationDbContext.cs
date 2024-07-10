@@ -12,6 +12,7 @@ namespace BuscoAPI
         public DbSet<Profession> Professions { get; set; }
         public DbSet<Worker> Workers { get; set; }
         public DbSet<WorkersProfessions> WorkersProfessions { get; set; }
+        public DbSet<Proposal> Proposals { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

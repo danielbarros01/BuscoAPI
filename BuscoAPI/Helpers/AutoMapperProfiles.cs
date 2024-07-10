@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using BuscoAPI.DTOS;
+using BuscoAPI.DTOS.Proposals;
 using BuscoAPI.DTOS.Users;
 using BuscoAPI.DTOS.Worker;
 using BuscoAPI.Entities;
@@ -23,6 +23,9 @@ namespace BuscoAPI.Helpers
 
             CreateMap<WorkersProfessions, WorkersProfessionsDTO>()
                 .ForMember(x => x.Profession, opt => opt.MapFrom(src => src.Profession));
+
+            //De ProposalCreation a Proposal
+            CreateMap<ProposalCreationDTO, Proposal>();
         }
     }
 }

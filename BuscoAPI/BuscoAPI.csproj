@@ -8,6 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\proposals\31259161-0ffb-490b-85ce-137f3ebc4f67.webp" />
+    <Content Remove="wwwroot\proposals\65f724ec-c487-45ab-b597-73a482b2fccc.png" />
+    <Content Remove="wwwroot\proposals\ab166e73-3715-4c05-a577-2b770b9ed0cb.webp" />
     <Content Remove="wwwroot\users\786481af-4dd7-4fa5-b95f-df5d7cc07e45.jpg" />
   </ItemGroup>
 
@@ -23,6 +26,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\proposals\" />
   </ItemGroup>
 
 </Project>
