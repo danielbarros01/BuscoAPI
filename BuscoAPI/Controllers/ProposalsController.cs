@@ -64,9 +64,12 @@ namespace BuscoAPI.Controllers
                 //Creo 
                 context.Proposals.Add(proposal);
 
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync();// Aquí es donde el Id se genera
 
-                return Ok();
+                return new CreatedAtRouteResult(
+                    "GetProposal",
+                    new { id = proposal.Id }
+                );
 
             }
             catch (Exception ex)
@@ -110,6 +113,24 @@ namespace BuscoAPI.Controllers
 
                 proposal = mapper.Map(proposalCreation, proposal);
 
+                var image = proposalCreation.Image;
+                if (image != null)
+                {
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await image.CopyToAsync(memoryStream);
+                        var content = memoryStream.ToArray(); //datos en bytes
+                        var extension = Path.GetExtension(image.FileName);
+
+                        proposal.Image = await fileStore.SaveFile(
+                                content,
+                                extension,
+                                container,
+                                image.ContentType
+                             );
+                    }
+                }
+
                 context.Entry(proposal).State = EntityState.Modified;
 
                 await context.SaveChangesAsync();
@@ -148,20 +169,48 @@ namespace BuscoAPI.Controllers
         }
 
         [HttpGet("all/{userid}", Name = "GetProposalsOfUser")]
-        public async Task<ActionResult<List<Proposal>>> GetProposals([FromQuery] PaginationDTO pagination, int userid)
+        public async Task<ActionResult<List<Proposal>>> GetProposals(
+            [FromQuery] PaginationDTO pagination,
+            [FromQuery] bool? status,
+            int userid)
         {
             try
             {
-                var queryable = context.Proposals.AsQueryable();
+                var queryable = context.Proposals
+                    .Where(x => x.userId == userid)
+                    .OrderByDescending(x => x.Date)
+                    .AsQueryable();
+
                 await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
 
-                var proposals = await queryable
-                    .Where(x => x.userId == userid)
-                    .Paginate(pagination)
-                    .ToListAsync();
+                List<Proposal> proposals;
+
+                if (status == null)
+                {
+                    //La propuesta esta activa
+                    proposals = await queryable
+                        .Paginate(pagination)
+                        .ToListAsync();
+                }
+                else if(status == true)
+                {
+                    //La propuesta esta terminada
+                    proposals = await queryable
+                       .Where(x => x.Status == true)
+                       .Paginate(pagination)
+                       .ToListAsync();
+                }
+                else
+                {
+                    //La propuesta esta en proceso de realizacion
+                    proposals = await queryable
+                       .Where(x => x.Status == false)
+                       .Paginate(pagination)
+                       .ToListAsync();
+                }
+
 
                 return proposals;
-
             }
             catch (Exception ex)
             {

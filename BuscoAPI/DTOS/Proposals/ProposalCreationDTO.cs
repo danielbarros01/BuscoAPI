@@ -1,6 +1,7 @@
 ﻿using BuscoAPI.Validations;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace BuscoAPI.DTOS.Proposals
 {
@@ -25,7 +26,8 @@ namespace BuscoAPI.DTOS.Proposals
         [Required]
         public decimal MaxBudget { get; set; }
 
-        [Required]
+        //[Required]
+        [AllowNull]
         [FileSize(sizeMaxMb: 4)]
         [FileTypeValidation(grupoTipoArchivo: FileType.Image)]
         public IFormFile Image { get; set; }

@@ -15,6 +15,9 @@ namespace BuscoAPI.Helpers
             CreateMap<User, UserDTO>()
                 .ForMember(x => x.Worker, opt => opt.MapFrom(src => src.Worker));
 
+            CreateMap<User, UserBasicDTO>()
+                .ForMember(x => x.Worker, opt => opt.MapFrom(src => src.Worker));
+
             //De WorkerCreationDTO a Worker
             CreateMap<WorkerCreationDTO, Worker>();
 
@@ -25,7 +28,8 @@ namespace BuscoAPI.Helpers
                 .ForMember(x => x.Profession, opt => opt.MapFrom(src => src.Profession));
 
             //De ProposalCreation a Proposal
-            CreateMap<ProposalCreationDTO, Proposal>();
+            CreateMap<ProposalCreationDTO, Proposal>()
+                .ForMember(x => x.Image, opt => opt.Ignore());
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BuscoAPI.DTOS;
+using BuscoAPI.DTOS.Users;
 using BuscoAPI.DTOS.Worker;
 using BuscoAPI.Entities;
 using BuscoAPI.Helpers;
@@ -8,6 +9,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+
+
+/**
+ * GetRecommendedWorkers: 
+ *OrderByDescending y ThenByDescending se usan para ordenar los usuarios de manera que 
+ *aquellos que coincidan con el usuario autenticado en City aparezcan primero, seguidos por 
+ *los que coincidan en Department, luego en Province, y finalmente en Country.
+ */
+
 
 namespace BuscoAPI.Controllers
 {
@@ -111,6 +121,39 @@ namespace BuscoAPI.Controllers
                 return StatusCode(500, "An error occurred");
             }
 
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("recomendations")]
+        public async Task<ActionResult<List<UserDTO>>> GetRecommendedWorkers([FromQuery] PaginationDTO pagination)
+        {
+            try
+            {
+                var user = await GetEntity.GetUser(HttpContext, context);
+                if (user == null) return Unauthorized(new ErrorInfo { Field = "Error", Message = "Debe estar autenticado." });
+
+                var queryable = context.Users
+                    .Include(x => x.Worker)
+                    .Where(x => x.Worker != null && x.Id != user.Id) //trabajador no sea null y no me incluya a mi
+                    .OrderByDescending(x => x.City != null && x.City == user.City)
+                    .ThenByDescending(x => x.Department != null && x.Department == user.Department)
+                    .ThenByDescending(x => x.Province != null && x.Province == user.Province)
+                    .ThenByDescending(x => x.Country != null && x.Country == user.Country)
+                    .AsQueryable();
+
+                await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage); 
+
+                var recommendedWorgingUsers = await queryable.Paginate(pagination).ToListAsync();
+
+                var mappedList = mapper.Map<List<UserDTO>>(recommendedWorgingUsers);
+
+                return mappedList;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
+            }
         }
     }
 }

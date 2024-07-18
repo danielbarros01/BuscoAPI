@@ -368,6 +368,26 @@ namespace BuscoAPI.Controllers
             }
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<UserBasicDTO>> GetUser(int id)
+        {
+            try
+            {
+                var user = await context.Users
+                    .Include(x=>x.Worker)
+                    .FirstOrDefaultAsync(x => x.Id == id);
+
+                if (user == null) { return NotFound(); }
+                var userMapper = mapper.Map<UserBasicDTO>(user);
+
+                return userMapper;
+            }
+            catch (Exception ex) {
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
+            }
+        }
+
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         public async Task<ActionResult<List<User>>> GetUsers()
@@ -375,5 +395,7 @@ namespace BuscoAPI.Controllers
             var users = await context.Users.ToListAsync();
             return Ok(users);
         }
+    
+    
     }
 }

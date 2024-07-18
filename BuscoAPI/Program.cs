@@ -1,4 +1,5 @@
 
+using AutoMapper;
 using BuscoAPI;
 using BuscoAPI.Controllers;
 using BuscoAPI.Helpers;
@@ -20,6 +21,8 @@ builder.Services
     .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles); //Esto indica que se debe ignorar cualquier referencia circular o relación cíclica durante la serialización JSON
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient(); //para consumir apis
+builder.Services.AddHttpClient<SNDGService>(); //para consumir api de ubicaciones
 
 
 //Configure IFileStore
@@ -68,6 +71,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.WebHost.UseUrls("http://localhost:5029", "http://192.168.100.7:5029", "http://*:5029");
 
+
+
 var app = builder.Build();
 
 // Seed the database
@@ -75,7 +80,12 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ApplicationDbContext>();
-    DbInitializer.Seed(context);
+    var sndgService = services.GetRequiredService<SNDGService>();
+    var mapper = services.GetRequiredService<IMapper>();
+
+    DbInitializer.SeedCategoriesAndProfessions(context);
+    await DbInitializer.SeedUsers(context, sndgService);
+    await DbInitializer.SeedWorkers(context, mapper);
 }
 
 
