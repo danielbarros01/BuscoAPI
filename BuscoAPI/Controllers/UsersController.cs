@@ -45,7 +45,8 @@ namespace BuscoAPI.Controllers
         [HttpPost("create")]
         public async Task<ActionResult<UserToken>> CreateUser([FromBody] UserCreationDTO userCreation)
         {
-            try{
+            try
+            {
                 var userMailExists = await context.Users.AnyAsync(x => x.Email == userCreation.Email);
                 var userUsernameExists = await context.Users.AnyAsync(x => x.Username == userCreation.Username);
 
@@ -86,7 +87,9 @@ namespace BuscoAPI.Controllers
 
                 //Return the token to the client
                 return userToken;
-            }catch(Exception ex){
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
                 return StatusCode(500, "An error occurred");
             }
@@ -95,22 +98,25 @@ namespace BuscoAPI.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserToken>> Login([FromBody] UserLoginDTO user)
         {
-            try{
+            try
+            {
                 var userDb = await context.Users.FirstOrDefaultAsync(x => x.Email == user.Email || x.Username == user.Username);
 
                 if (userDb == null) return Unauthorized();
 
                 //verificar si es correcto el password
                 var isPasswordCorrect = BCrypt.Net.BCrypt.Verify(user.Password, userDb.Password);
-            
+
                 if (!isPasswordCorrect)
                 {
                     return Unauthorized();
                 }
-            
+
                 var userToken = await TokenHelper.BuildToken(user, context, configuration);
                 return userToken;
-            }catch (Exception ex){
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
                 return StatusCode(500, "An error occurred");
             }
@@ -120,15 +126,16 @@ namespace BuscoAPI.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> ConfirmCode([FromBody] VerificationCodeDTO verificationCode)
         {
-            try{
+            try
+            {
                 //Verify that the user exists
                 var userId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
                 var user = await context.Users.FirstOrDefaultAsync(x => x.Id == Int32.Parse(userId));
-                if(user == null) return Unauthorized();
+                if (user == null) return Unauthorized();
 
-                if(verificationCode.Code != user.VerificationCode)
+                if (verificationCode.Code != user.VerificationCode)
                 {
-                    return BadRequest(new ErrorInfo{ Field = "Code", Message = "El codigo es incorrecto"});
+                    return BadRequest(new ErrorInfo { Field = "Code", Message = "El codigo es incorrecto" });
                 }
 
                 //User confirmed a the code is removed 
@@ -152,7 +159,7 @@ namespace BuscoAPI.Controllers
             try
             {
                 var user = await context.Users.FirstOrDefaultAsync(x => x.Email == email);
-                
+
                 if (user == null || code != user.VerificationCode)
                 {
                     return BadRequest(new ErrorInfo { Field = "Code", Message = "El codigo es incorrecto" });
@@ -202,7 +209,7 @@ namespace BuscoAPI.Controllers
 
                 await context.SaveChangesAsync();
                 return Ok();
-            }   
+            }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
@@ -219,7 +226,8 @@ namespace BuscoAPI.Controllers
                 var userId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
                 var userDb = await context.Users.FirstOrDefaultAsync(x => x.Id == Int32.Parse(userId));
                 if (userDb == null) return Unauthorized();
-                if ((bool)!userDb.Confirmed) {
+                if ((bool)!userDb.Confirmed)
+                {
                     return Unauthorized(new ErrorInfo { Field = "Confirmed", Message = "Debe confirmar su cuenta" });
                 }
 
@@ -250,13 +258,14 @@ namespace BuscoAPI.Controllers
                 .FirstOrDefaultAsync(x => x.Id == Int32.Parse(userId));
 
             if (user == null) return Unauthorized();
-            
+
             var userMapper = mapper.Map<User, UserDTO>(user);
             return Ok(userMapper);
         }
 
         [HttpPatch("send-code")]
-        public async Task<ActionResult> ResendCode([FromForm] String email){
+        public async Task<ActionResult> ResendCode([FromForm] String email)
+        {
             try
             {
                 var userDb = await context.Users.FirstOrDefaultAsync(x => x.Email == email);
@@ -288,7 +297,8 @@ namespace BuscoAPI.Controllers
         public async Task<ActionResult> ChangePassword([FromForm] String password)
         {
             //Validar password
-            if (string.IsNullOrEmpty(password) || password.Length < 6){
+            if (string.IsNullOrEmpty(password) || password.Length < 6)
+            {
                 return BadRequest(new ErrorInfo { Field = "Contraseña", Message = "La contraseña es un campo requerido de 6 caracteres minimo." });
             }
 
@@ -336,7 +346,7 @@ namespace BuscoAPI.Controllers
                     var content = memoryStream.ToArray(); //datos en bytes
                     var extension = Path.GetExtension(userImageDto.Image.FileName);
 
-                    if(userDb.Image != null)
+                    if (userDb.Image != null)
                     {
                         userDb.Image = await fileStore.EditFile(
                             content,
@@ -355,14 +365,15 @@ namespace BuscoAPI.Controllers
                            userImageDto.Image.ContentType
                         );
                     }
-                    
+
                 }
 
                 await context.SaveChangesAsync();
 
                 return Ok(new { image = userDb.Image });
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
                 return StatusCode(500, "An error occurred");
             }
@@ -374,7 +385,9 @@ namespace BuscoAPI.Controllers
             try
             {
                 var user = await context.Users
-                    .Include(x=>x.Worker)
+                    .Include(x => x.Worker)
+                    .ThenInclude(x => x.WorkersProfessions)
+                    .ThenInclude(x => x.Profession)
                     .FirstOrDefaultAsync(x => x.Id == id);
 
                 if (user == null) { return NotFound(); }
@@ -382,7 +395,8 @@ namespace BuscoAPI.Controllers
 
                 return userMapper;
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
                 return StatusCode(500, "An error occurred");
             }
@@ -395,7 +409,7 @@ namespace BuscoAPI.Controllers
             var users = await context.Users.ToListAsync();
             return Ok(users);
         }
-    
-    
+
+
     }
 }

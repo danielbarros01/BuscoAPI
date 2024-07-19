@@ -84,8 +84,8 @@ using (var scope = app.Services.CreateScope())
     var mapper = services.GetRequiredService<IMapper>();
 
     DbInitializer.SeedCategoriesAndProfessions(context);
-    await DbInitializer.SeedUsers(context, sndgService);
-    await DbInitializer.SeedWorkers(context, mapper);
+    //await DbInitializer.SeedUsers(context, sndgService);
+    //await DbInitializer.SeedWorkers(context, mapper);
 }
 
 

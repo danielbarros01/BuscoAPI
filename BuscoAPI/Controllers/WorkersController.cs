@@ -124,7 +124,7 @@ namespace BuscoAPI.Controllers
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet("recomendations")]
+        [HttpGet("recommendations")]
         public async Task<ActionResult<List<UserDTO>>> GetRecommendedWorkers([FromQuery] PaginationDTO pagination)
         {
             try
@@ -134,6 +134,8 @@ namespace BuscoAPI.Controllers
 
                 var queryable = context.Users
                     .Include(x => x.Worker)
+                    .ThenInclude(x => x.WorkersProfessions)
+                    .ThenInclude(x => x.Profession)
                     .Where(x => x.Worker != null && x.Id != user.Id) //trabajador no sea null y no me incluya a mi
                     .OrderByDescending(x => x.City != null && x.City == user.City)
                     .ThenByDescending(x => x.Department != null && x.Department == user.Department)
