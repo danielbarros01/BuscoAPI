@@ -12,9 +12,9 @@ namespace BuscoAPI.Entities
         public string Requirements { get; set; }
         public DateTime Date { get; set; }
         [Column("min_budget")]
-        public float MinBudget { get; set; }
+        public decimal MinBudget { get; set; }
         [Column("max_budget")]
-        public float MaxBudget { get; set; }
+        public decimal MaxBudget { get; set; }
         [Column("image_path")]
         public string Image { get; set; }
         public bool? Status { get; set; }
@@ -22,6 +22,9 @@ namespace BuscoAPI.Entities
 
         [Column("user_id")]
         public int userId { get; set; }
+
+        public User user { get; set; }
+
         [Column("profession_id")]
         public int professionId { get; set; }
 

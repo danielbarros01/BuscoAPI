@@ -192,7 +192,7 @@ namespace BuscoAPI.Controllers
                         .Paginate(pagination)
                         .ToListAsync();
                 }
-                else if(status == true)
+                else if (status == true)
                 {
                     //La propuesta esta terminada
                     proposals = await queryable
@@ -215,6 +215,45 @@ namespace BuscoAPI.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("recommendations")]
+        public async Task<ActionResult<List<Proposal>>> GetRecommendedProposals(
+            [FromQuery] PaginationDTO pagination
+            )
+        {
+            try
+            {
+                var user = await GetEntity.GetUser(HttpContext, context);
+                if (user == null) return Unauthorized(new ErrorInfo { Field = "Error", Message = "Debe estar autenticado." });
+
+                var isWorker = await context.Workers.AnyAsync(w => w.UserId == user.Id);
+                if (!isWorker)
+                {
+                    return Forbid();
+                }
+
+                var queryable = context.Proposals
+                    .Where(x => x.Status == null) //null significa que esta sin trabajador, ergo Disponible
+                    .Include(x => x.user)
+                    .Where(x => x.userId != user.Id)
+                    .OrderByDescending(x => x.user.City != null && x.user.City == user.City)
+                    .ThenByDescending(x => x.user.Department != null && x.user.Department == user.Department)
+                    .ThenByDescending(x => x.user.Province != null && x.user.Province == user.Province)
+                    .ThenByDescending(x => x.user.Country != null && x.user.Country == user.Country)
+                    .AsQueryable();
+
+                await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
+
+                var recommendedProposals = await queryable.Paginate(pagination).ToListAsync();
+                return recommendedProposals;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
                 return StatusCode(500, "An error occurred");
             }
         }
