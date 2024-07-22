@@ -28,7 +28,10 @@ namespace BuscoAPI.Entities
         [Column("profession_id")]
         public int professionId { get; set; }
 
+        public Profession? profession { get; set; }
 
+
+        public List<Application>? Applications { get; set; }
 
         //Future
         [Column("limit_date")]

@@ -17,6 +17,8 @@ namespace BuscoAPI.Entities
         public String? WebPage { get; set; }
         public String Description { get; set; }
 
+        public User? User { get; set; }
+
         public List<WorkersProfessions> WorkersProfessions { get; set; }
 
     }

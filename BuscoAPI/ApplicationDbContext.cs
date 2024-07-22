@@ -13,6 +13,7 @@ namespace BuscoAPI
         public DbSet<Worker> Workers { get; set; }
         public DbSet<WorkersProfessions> WorkersProfessions { get; set; }
         public DbSet<Proposal> Proposals { get; set; }
+        public DbSet<Application> Applications { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -26,7 +27,6 @@ namespace BuscoAPI
             //La llave es
             modelBuilder.Entity<Worker>()
                 .HasKey(x => new { x.UserId });
-
 
             base.OnModelCreating(modelBuilder);
         }

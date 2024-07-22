@@ -237,9 +237,9 @@ namespace BuscoAPI.Controllers
                 }
 
                 var queryable = context.Proposals
-                    .Where(x => x.Status == null) //null significa que esta sin trabajador, ergo Disponible
+                    .Where(x => x.Status == null && x.userId != user.Id) //null significa que esta sin trabajador, ergo Disponible
                     .Include(x => x.user)
-                    .Where(x => x.userId != user.Id)
+                    .Include(x => x.profession)
                     .OrderByDescending(x => x.user.City != null && x.user.City == user.City)
                     .ThenByDescending(x => x.user.Department != null && x.user.Department == user.Department)
                     .ThenByDescending(x => x.user.Province != null && x.user.Province == user.Province)
@@ -254,6 +254,39 @@ namespace BuscoAPI.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                return StatusCode(500, "An error occurred");
+            }
+        }
+
+
+        [HttpPatch("{proposalId}/remove-application", Name = "RemoveApplicationForProposal")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> RemoveApplicationForProposal(int proposalId)
+        {
+            try
+            {
+                //Traigo al usuario
+                var user = await GetEntity.GetUser(HttpContext, context);
+                if (user == null) { return Unauthorized(); }
+
+                var proposal = await context.Proposals.FirstOrDefaultAsync(x => x.Id == proposalId && x.userId == user.Id);
+                if (proposal == null) { return NotFound(new ErrorInfo { Field = "Error", Message = "No existe tal propuesta" }); }
+
+                //Traigo la aplicacion aceptada
+                var application = await context.Applications
+                    .FirstOrDefaultAsync(x => x.ProposalId == proposalId && x.Status == true);
+
+                //Actualizo estados
+                proposal.Status = null; //Sin trabajador
+                application.Status = false; //rechazado
+
+                await context.SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
                 return StatusCode(500, "An error occurred");
             }
         }
