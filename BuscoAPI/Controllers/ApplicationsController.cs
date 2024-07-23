@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
+using System.Linq;
 
 namespace BuscoAPI.Controllers
 {
@@ -158,7 +159,7 @@ namespace BuscoAPI.Controllers
 
                 //Verificar que exista la aplicacion
                 var application = await context.Applications
-                    .FirstOrDefaultAsync(x => x.WorkerUserId == user.Id && x.ProposalId == proposalId);
+                    .FirstOrDefaultAsync(x => x.Id == applicationId && x.ProposalId == proposalId);
 
                 if (application == null) { return NotFound(new ErrorInfo { Field = "Error", Message = "No existe la aplicacion" }); }
 
@@ -167,11 +168,12 @@ namespace BuscoAPI.Controllers
                 {
                     application.Status = true; //Aplicacion aceptada
                     proposal.Status = false; // En proceso de trabajo
-                }else if (!status)
+                }
+                else if (!status)
                 {
                     application.Status = false; //Aplicacion rechazada
                 }
-                
+
                 // Guardar los cambios en la base de datos
                 await context.SaveChangesAsync();
 
@@ -186,28 +188,64 @@ namespace BuscoAPI.Controllers
 
 
         [HttpGet("{proposalId}", Name = "GetApplications")]
-        public async Task<ActionResult<Proposal>> GetApplications(int proposalId)
+        public async Task<ActionResult<List<Application>>> GetApplications([FromQuery] PaginationDTO pagination, int proposalId)
         {
             try
             {
                 //Verificar que la propuesta existe
-                var proposal = await context.Proposals
-                    .Include(x => x.Applications)
-                    .ThenInclude(x => x.Worker)
-                    .ThenInclude(w => w.User)
-                    .FirstOrDefaultAsync(x => x.Id == proposalId);
-
-                if (proposal == null)
+                var proposalExist = await context.Proposals.AnyAsync(x => x.Id == proposalId);
+                if (!proposalExist)
                 {
                     return NotFound(
                     new ErrorInfo { Field = "Error", Message = "No existe tal propuesta" });
                 }
 
-                var proposalDTO = mapper.Map<ProposalDTO>(proposal);
+
+                var queryable = context.Applications
+                    .Where(x => x.ProposalId == proposalId)
+                    .Include(x => x.Worker)
+                    .ThenInclude(w => w.User)
+                    .AsQueryable();
+
+                await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
+
+                var applications = await queryable.Paginate(pagination).ToListAsync();
+
+                var proposalDTO = mapper.Map<List<ApplicationDTO>>(applications);
 
                 return Ok(proposalDTO);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
+            }
+        }
+
+        [HttpGet("{proposalId}/accepted", Name = "GetApplicationAccepted")]
+        public async Task<ActionResult<Application>> GetApplicationAccepted(int proposalId)
+        {
+            try
+            {
+                //Verificar que la propuesta existe
+                var proposalExist = await context.Proposals.AnyAsync(x => x.Id == proposalId);
+                if (!proposalExist)
+                {
+                    return NotFound(
+                    new ErrorInfo { Field = "Error", Message = "No existe tal propuesta" });
+                }
+
+                var application = await context.Applications
+                    .Include(x => x.Worker)
+                    .ThenInclude(w => w.User)
+                    .FirstOrDefaultAsync(x => x.Status == true && x.ProposalId == proposalId);
+
+                var proposalDTO = mapper.Map<ApplicationDTO>(application);
+
+                return application;
+            }
+            catch(Exception ex)
+            {
                 Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
                 return StatusCode(500, "An error occurred");
             }

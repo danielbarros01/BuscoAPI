@@ -16,6 +16,6 @@ namespace BuscoAPI.DTOS.Users
         public string Department { get; set; }
         public string City { get; set; }
         public string? Image { get; set; }
-        public WorkerDTO Worker { get; set; }
+        public WorkerWithoutUser Worker { get; set; }
     }
 }

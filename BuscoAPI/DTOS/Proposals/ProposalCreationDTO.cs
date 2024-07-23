@@ -35,7 +35,7 @@ namespace BuscoAPI.DTOS.Proposals
         [Required]
         public int professionId { get; set; }
 
-        public bool? Status { get; } = null;
+        public bool? Status { get; set; } = null;
 
         public DateTime Date { get; } = DateTime.Now;
     }

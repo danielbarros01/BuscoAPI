@@ -85,7 +85,9 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                var proposal = await context.Proposals.FirstOrDefaultAsync(x => x.Id == id);
+                var proposal = await context.Proposals
+                    .Include(x => x.profession)
+                    .FirstOrDefaultAsync(x => x.Id == id);
 
                 if (proposal == null) { return NotFound(new ErrorInfo { Field = "Id", Message = "No existe tal propuesta" }); }
 
@@ -110,7 +112,9 @@ namespace BuscoAPI.Controllers
 
                 var proposal = await context.Proposals.FirstOrDefaultAsync(x => x.Id == id && x.userId == user.Id);
                 if (proposal == null) { return NotFound(new ErrorInfo { Field = "Error", Message = "No existe tal propuesta " }); }
-
+                
+                proposalCreation.Status = proposal.Status; //ProposalCreationStatus es null por defecto, por eso hacemos esto
+                
                 proposal = mapper.Map(proposalCreation, proposal);
 
                 var image = proposalCreation.Image;

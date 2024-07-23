@@ -25,6 +25,9 @@ namespace BuscoAPI.Helpers
 
             CreateMap<Worker, WorkerDTO>()
                 .ForMember(x => x.WorkersProfessions, opt => opt.MapFrom(src => src.WorkersProfessions));
+            
+            CreateMap<Worker, WorkerWithoutUser>()
+                .ForMember(x => x.WorkersProfessions, opt => opt.MapFrom(src => src.WorkersProfessions));
 
 
             //CreateMap<Worker, WorkerApplicationDTO>()

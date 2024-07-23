@@ -1,4 +1,5 @@
-﻿using BuscoAPI.Entities;
+﻿using BuscoAPI.DTOS.Worker;
+using BuscoAPI.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace BuscoAPI
