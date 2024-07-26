@@ -112,9 +112,9 @@ namespace BuscoAPI.Controllers
 
                 var proposal = await context.Proposals.FirstOrDefaultAsync(x => x.Id == id && x.userId == user.Id);
                 if (proposal == null) { return NotFound(new ErrorInfo { Field = "Error", Message = "No existe tal propuesta " }); }
-                
+
                 proposalCreation.Status = proposal.Status; //ProposalCreationStatus es null por defecto, por eso hacemos esto
-                
+
                 proposal = mapper.Map(proposalCreation, proposal);
 
                 var image = proposalCreation.Image;
@@ -254,6 +254,44 @@ namespace BuscoAPI.Controllers
 
                 var recommendedProposals = await queryable.Paginate(pagination).ToListAsync();
                 return recommendedProposals;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, "An error occurred");
+            }
+        }
+
+
+        [HttpPatch("{id}/finalize")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> FinalizeProposal(int id)
+        {
+            try
+            {
+                var user = await GetEntity.GetUser(HttpContext, context);
+                if (user == null) return Unauthorized(new ErrorInfo { Field = "Error", Message = "Debe estar autenticado." });
+
+                var proposal = await context.Proposals
+                    .Include(p => p.Applications)
+                    .FirstOrDefaultAsync(p => p.Id == id && p.userId == user.Id);
+
+                if (proposal == null)
+                {
+                    return NotFound(new ErrorInfo { Field = "Error", Message = "No existe tal propuesta" });
+                }
+
+                //False = 0, esta en proceso
+                if (proposal.Status != false)
+                {
+                    return StatusCode(403, new ErrorInfo { Message = "La propuesta debe tener un trabajador asignado" });
+                }
+
+
+                proposal.Status = true; // propuesta finalizada
+                await context.SaveChangesAsync();
+
+                return NoContent();
             }
             catch (Exception ex)
             {

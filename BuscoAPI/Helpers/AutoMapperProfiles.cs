@@ -54,6 +54,12 @@ namespace BuscoAPI.Helpers
             
             //De User a UserApplicationDTO
             CreateMap<User, UserApplicationDTO>();
+
+            //De QualificationCreationDTO a Qualification
+            CreateMap<QualificationCreationDTO, Qualification>().ReverseMap();
+            
+            //De Qualification
+            CreateMap<Qualification, QualificationDTO>();
         }
     }
 }
