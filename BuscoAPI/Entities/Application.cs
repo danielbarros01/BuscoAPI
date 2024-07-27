@@ -22,6 +22,7 @@ namespace BuscoAPI.Entities
         public bool? Status { get; set; } = null;
 
         public Worker? Worker { get; set; }
+        public Proposal? Proposal { get; set; }
 
     /*In the future add budget and message, in version 2*/
     }

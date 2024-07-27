@@ -1,4 +1,5 @@
-﻿using BuscoAPI.DTOS.Worker;
+﻿using BuscoAPI.DTOS.Proposals;
+using BuscoAPI.DTOS.Worker;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BuscoAPI.DTOS
@@ -12,5 +13,7 @@ namespace BuscoAPI.DTOS
         public bool? Status { get; set; } = null;
 
         public WorkerApplicationDTO? Worker { get; set; }
+
+        public ProposalDTO? Proposal { get; set; }
     }
 }

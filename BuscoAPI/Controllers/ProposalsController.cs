@@ -337,8 +337,6 @@ namespace BuscoAPI.Controllers
         }
 
 
-
-
         [HttpGet("search")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<List<WorkerWithQualification>>> SearchProposals(

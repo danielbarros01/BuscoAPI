@@ -188,7 +188,8 @@ namespace BuscoAPI.Controllers
 
 
         [HttpGet("{proposalId}", Name = "GetApplications")]
-        public async Task<ActionResult<List<Application>>> GetApplications([FromQuery] PaginationDTO pagination, int proposalId)
+        public async Task<ActionResult<List<Application>>> GetApplications(
+            [FromQuery] PaginationDTO pagination, int proposalId)
         {
             try
             {
@@ -245,6 +246,43 @@ namespace BuscoAPI.Controllers
                 return application;
             }
             catch(Exception ex)
+            {
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
+            }
+        }
+
+
+
+        [HttpGet("me", Name = "GetUserApplications")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult<List<Application>>> GetApplicationsOfUser(
+            [FromQuery] bool? status,
+            [FromQuery] PaginationDTO pagination
+            )
+        {
+            try
+            {
+                //Traigo al usuario
+                var user = await GetEntity.GetUser(HttpContext, context);
+                if (user == null) { return Unauthorized(); }
+
+                var queryable = context.Applications
+                    .Where(x => x.WorkerUserId == user.Id)
+                    .Where(x => (status == null && x.Status == null) || (status != null && x.Status == status))
+                    .Include(x => x.Proposal)
+                    .OrderByDescending(x => x.Date)
+                    .AsQueryable();
+
+                await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
+
+                var applications = await queryable.Paginate(pagination).ToListAsync();
+
+                var applicationsDTO = mapper.Map<List<ApplicationDTO>>(applications);
+
+                return Ok(applicationsDTO);
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
                 return StatusCode(500, "An error occurred");
