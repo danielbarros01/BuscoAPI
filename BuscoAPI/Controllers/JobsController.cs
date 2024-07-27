@@ -68,5 +68,32 @@ namespace BuscoAPI.Controllers
                 return StatusCode(500, "An error occurred");
             }
         }
+
+
+        [HttpGet("{userId}/completed")]
+        public async Task<ActionResult<List<Proposal>>> GetJobsFinishedOfUser(
+            int userId,
+            [FromQuery] PaginationDTO pagination)
+        {
+            try
+            {
+                //la propuesta debe estar terminada, y en aplicaciones la que este seleccionada es el usuario
+                var queryable = context.Proposals
+                    .Where(p => p.Status == true && p.Applications.Any(a => a.Status == true && a.WorkerUserId == userId))
+                    .AsQueryable();
+
+                await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
+
+                var proposals = await queryable.Paginate(pagination).ToListAsync();
+
+                var mapperProposals = mapper.Map<List<ProposalDTO>>(proposals);
+
+                return Ok(mapperProposals);
+            }
+            catch (Exception ex) {
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
+            }
+        }
     }
 }

@@ -193,6 +193,7 @@ namespace BuscoAPI.Controllers
                 {
                     //La propuesta esta activa
                     proposals = await queryable
+                        .Where(x => x.Status == null)
                         .Paginate(pagination)
                         .ToListAsync();
                 }
