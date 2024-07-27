@@ -1,4 +1,6 @@
-﻿using BuscoAPI.Entities;
+﻿using BuscoAPI.DTOS.Users;
+using BuscoAPI.Entities;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BuscoAPI.DTOS.Worker
@@ -12,9 +14,10 @@ namespace BuscoAPI.DTOS.Worker
         public string Description { get; set; }
         public List<WorkersProfessions> WorkersProfessions { get; set; }
 
-        public User? User { get; set; }
+        public UserApplicationDTO? User { get; set; }
 
-        public int NumberOfQualifications { get; set; }
-        public int AverageQualification { get; set; }
+        public float? AverageQualification { get; set; }
+        //public int NumberOfQualifications { get; set; }
+        //public float AverageQualification { get; set; }
     }
 }

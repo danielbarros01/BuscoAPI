@@ -21,5 +21,20 @@ namespace BuscoAPI.Entities
 
         public List<WorkersProfessions> WorkersProfessions { get; set; }
 
+        public List<Qualification>? Qualifications { get; set; }
+
+        public float AverageQualification
+        {
+            get
+            {
+                if (Qualifications == null || !Qualifications.Any())
+                {
+                    return 0;
+                }
+
+                return Qualifications.Average(q => q.Score);
+            }
+        }
+
     }
 }

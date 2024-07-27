@@ -2,7 +2,9 @@
 using BuscoAPI.DTOS;
 using BuscoAPI.DTOS.Proposals;
 using BuscoAPI.DTOS.Users;
+using BuscoAPI.DTOS.Worker;
 using BuscoAPI.Entities;
+using BuscoAPI.Entities.GeoApi;
 using BuscoAPI.Helpers;
 using BuscoAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -333,5 +335,69 @@ namespace BuscoAPI.Controllers
                 return StatusCode(500, "An error occurred");
             }
         }
+
+
+
+
+        [HttpGet("search")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult<List<WorkerWithQualification>>> SearchProposals(
+            [FromQuery] string query,
+            [FromQuery] int? filterCategoryId,
+            [FromQuery] Ubication ubication,
+            [FromQuery] PaginationDTO pagination
+            )
+        {
+            try
+            {
+                var user = await GetEntity.GetUser(HttpContext, context);
+                if (user == null) return Unauthorized(new ErrorInfo { Field = "Error", Message = "Debe estar autenticado." });
+
+
+                var queryable = context.Proposals
+                   .Where(p => p.userId != user.Id)
+                   .Include(p => p.profession)
+                   //.Include(p => p.user)
+                   .AsNoTracking(); // Se usa para mejorar el rendimiento si no se necesitan rastrear los cambios en las entidades
+
+
+                if (filterCategoryId != null)
+                {
+                    queryable = queryable.Where(p => p.profession.CategoryId == filterCategoryId);
+                }
+
+                if (!string.IsNullOrEmpty(query))
+                {
+                    queryable = queryable.Where(x => EF.Functions.Like(x.profession.Name, $"%{query}%"));
+                }
+
+
+                /*
+                 Ordena las propuestas:
+                    Primero por ciudad.
+                    Dps por departamento, provincia y país.
+                    Finalmente por fecha de la propuesta de manera descendente.
+                 */
+                queryable = queryable
+                    .OrderByDescending(x => x.user.City == ubication.City)
+                    .ThenByDescending(x => x.user.Department == ubication.Department)
+                    .ThenByDescending(x => x.user.Province == ubication.Province)
+                    .ThenByDescending(x => x.user.Country == ubication.Country)
+                    .ThenByDescending(p => p.Date);
+
+                await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
+                var proposals = await queryable.Paginate(pagination).ToListAsync();
+
+                var mapperProposals = mapper.Map<List<ProposalDTO>>(proposals);
+
+                return Ok(proposals);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+                return StatusCode(500, "An error occurred");
+            }
+        }
+
     }
 }
