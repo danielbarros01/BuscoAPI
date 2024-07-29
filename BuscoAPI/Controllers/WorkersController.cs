@@ -181,18 +181,23 @@ namespace BuscoAPI.Controllers
                    .Where(w => w.UserId != user.Id)
                    .Include(w => w.User)
                    .Include(w => w.Qualifications)
+                   .Include(w => w.WorkersProfessions)
+                    .ThenInclude(wp => wp.Profession)
                    .AsNoTracking(); // Se usa para mejorar el rendimiento si no se necesitan rastrear los cambios en las entidades
 
 
                 if (filterCategoryId != null)
                 {
                     queryable = queryable
-                        .Where(w => w.WorkersProfessions.Any(p => p.Profession.CategoryId == filterCategoryId));
+                        .Where(w => w.WorkersProfessions
+                        .Any(p => p.Profession.CategoryId == filterCategoryId));
                 }
 
                 if (!string.IsNullOrEmpty(query))
                 {
-                    queryable = queryable.Where(x => x.WorkersProfessions.Any(p => EF.Functions.Like(p.Profession.Name, $"%{query}%")));
+                    queryable = queryable
+                        .Where(w => w.WorkersProfessions
+                            .Any(p => EF.Functions.Like(p.Profession.Name, $"%{query}%")));
                 }
 
                 if (filterQualification != null)
