@@ -20,6 +20,8 @@ builder.Services
     .AddControllers()
     .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles); //Esto indica que se debe ignorar cualquier referencia circular o relación cíclica durante la serialización JSON
 
+builder.Services.AddSignalR();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient(); //para consumir apis
 builder.Services.AddHttpClient<SNDGService>(); //para consumir api de ubicaciones
@@ -96,8 +98,17 @@ using (var scope = app.Services.CreateScope())
 
 app.UseStaticFiles();
 
+app.UseRouting();// Asegúrate de que esto esté antes de UseAuthorization y UseEndpoints
+
 app.UseAuthorization();
 
 app.MapControllers();
+
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.MapHub<ChatHub>("/chathub");
+});
 
 app.Run();

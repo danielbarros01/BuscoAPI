@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BuscoAPI.DTOS;
+using BuscoAPI.DTOS.Chat;
 using BuscoAPI.DTOS.Proposals;
 using BuscoAPI.DTOS.Users;
 using BuscoAPI.DTOS.Worker;
@@ -63,6 +64,9 @@ namespace BuscoAPI.Helpers
             
             //De Qualification
             CreateMap<Qualification, QualificationDTO>();
+
+
+            CreateMap<Chat, ChatDTO>();
         }
     }
 }
