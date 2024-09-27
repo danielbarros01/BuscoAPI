@@ -136,8 +136,10 @@ namespace BuscoAPI.Controllers
 
                 var queryable = context.Users
                     .Include(x => x.Worker)
-                    .ThenInclude(x => x.WorkersProfessions)
-                    .ThenInclude(x => x.Profession)
+                        .ThenInclude(w => w.Qualifications)
+                    .Include(x => x.Worker)
+                        .ThenInclude(x => x.WorkersProfessions)
+                            .ThenInclude(x => x.Profession)
                     .Where(x => x.Worker != null && x.Id != user.Id) //trabajador no sea null y no me incluya a mi
                     .OrderByDescending(x => x.City != null && x.City == user.City)
                     .ThenByDescending(x => x.Department != null && x.Department == user.Department)

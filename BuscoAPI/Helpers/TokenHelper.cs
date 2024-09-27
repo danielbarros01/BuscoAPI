@@ -25,6 +25,7 @@ namespace BuscoAPI.Helpers
 
             var user = await context.Users.FirstAsync(x => x.Email == userCreation.Email || x.Username == userCreation.Username);
             claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
+            claims.Add(new Claim(ClaimTypes.Name, user.Username.ToString()));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JWT:key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

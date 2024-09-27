@@ -17,6 +17,7 @@ namespace BuscoAPI
         public DbSet<Application> Applications { get; set; }
         public DbSet<Qualification> WorkerQualifications { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -29,6 +30,14 @@ namespace BuscoAPI
             //La llave es
             modelBuilder.Entity<Worker>()
                 .HasKey(x => new { x.UserId });
+
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.HasOne(n => n.UserSender)
+                    .WithMany()
+                    .HasForeignKey(n => n.UserSenderId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
             base.OnModelCreating(modelBuilder);
         }

@@ -3,6 +3,7 @@ using AutoMapper;
 using BuscoAPI;
 using BuscoAPI.Controllers;
 using BuscoAPI.Helpers;
+using BuscoAPI.RealTime;
 using BuscoAPI.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -71,7 +72,7 @@ builder.Services.AddAuthentication(options =>
 //Configure email service
 builder.Services.AddScoped<IEmailService, EmailService>();
 
-builder.WebHost.UseUrls("http://localhost:5029", "http://192.168.100.7:5029", "http://*:5029");
+builder.WebHost.UseUrls("http://localhost:5029", "http://192.168.1.73:5029", "http://*:5029");
 
 
 
@@ -109,6 +110,7 @@ app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();
     endpoints.MapHub<ChatHub>("/chathub");
+    endpoints.MapHub<NotificationHub>("/notificationhub");
 });
 
 app.Run();

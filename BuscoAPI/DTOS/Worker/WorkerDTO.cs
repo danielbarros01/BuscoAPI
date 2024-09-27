@@ -1,6 +1,7 @@
 ﻿using BuscoAPI.Entities;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using BuscoAPI.DTOS.Users;
 
 namespace BuscoAPI.DTOS.Worker
 {
@@ -13,6 +14,6 @@ namespace BuscoAPI.DTOS.Worker
         public string Description { get; set; }
         public List<WorkersProfessions> WorkersProfessions { get; set; }
 
-        public User? User { get; set; }
+        public UserDTO? User { get; set; }
     }
 }

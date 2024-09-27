@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BuscoAPI.DTOS;
 using BuscoAPI.DTOS.Chat;
+using BuscoAPI.DTOS.Notification;
 using BuscoAPI.DTOS.Proposals;
 using BuscoAPI.DTOS.Users;
 using BuscoAPI.DTOS.Worker;
@@ -67,6 +68,10 @@ namespace BuscoAPI.Helpers
 
 
             CreateMap<Chat, ChatDTO>();
+
+
+            CreateMap<Notification, NotificationCreationDTO>().ReverseMap();
+            CreateMap<Notification, NotificationDTO>().ReverseMap();
         }
     }
 }

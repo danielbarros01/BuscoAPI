@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Security.Claims;
 
-namespace BuscoAPI
+namespace BuscoAPI.RealTime
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ChatHub : Hub
@@ -26,7 +26,7 @@ namespace BuscoAPI
         {
             try
             {
-                var userId = Int32.Parse(Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var userId = int.Parse(Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
                 //Traigo los ids de los usuarios a los que he enviado o me han enviado un mensaje
                 //Si el usuario especificado es el remitente (UserIdSender == userId), selecciona el ID del receptor (UserIdReceiver)
@@ -74,7 +74,7 @@ namespace BuscoAPI
 
         public async Task GetMessagesWithUser(int toUserId)
         {
-            var userId = Int32.Parse(Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var userId = int.Parse(Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
             var messages = await context.Messages
                 .Where(m => (m.UserIdSender == userId || m.UserIdReceiver == userId)
@@ -87,7 +87,8 @@ namespace BuscoAPI
 
         public async Task SendMessage(int userIdReceiver, string message)
         {
-            var userId = Int32.Parse(Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var userId = int.Parse(Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
 
             // Convertir los identificadores de usuario a string
             var userIds = new List<string> { userIdReceiver.ToString(), userId.ToString() };
@@ -97,12 +98,14 @@ namespace BuscoAPI
                 UserIdSender = userId,
                 UserIdReceiver = userIdReceiver,
                 Text = message,
-                DateAndTime = DateTime.UtcNow
+                DateAndTime = DateTime.UtcNow,
+                UserSender = new User { Username = userName }
             };
 
             context.Messages.Add(newMessage);
             await context.SaveChangesAsync();
 
+            await Clients.User(userIdReceiver.ToString()).SendAsync("ReceiveMessageNotification", newMessage);
             await Clients.Users(userIds).SendAsync("ReceiveMessage", newMessage);
         }
 
