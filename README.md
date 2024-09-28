@@ -26,6 +26,10 @@ The activities planned within the system are:
 
 Contributions are welcome. Please open an issue or send a pull request to discuss any changes you wish to make.
 
+## EER Diagram
+![dbEER](https://github.com/user-attachments/assets/9b12d63a-e359-46cc-962e-e23613accec8)
+
+
 ## Endpoints
 
 ## **1. User management**
@@ -866,4 +870,8 @@ Contributions are welcome. Please open an issue or send a pull request to discus
    ...
   ]
   ```
+
+  ## Author
+
+- [@danielbarros01](https://www.github.com/danielbarros01)
 
