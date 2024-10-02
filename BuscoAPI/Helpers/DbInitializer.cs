@@ -12,10 +12,8 @@ namespace BuscoAPI.Helpers
     {
         public static void SeedCategoriesAndProfessions(ApplicationDbContext context)
         {
-            // Asegurarse de que la base de datos está creada
             context.Database.EnsureCreated();
 
-            // Sembrar categorías de profesiones
             if (!context.Categories.Any())
             {
                 foreach (var category in DataSeed.Categories)
@@ -25,7 +23,6 @@ namespace BuscoAPI.Helpers
                 context.SaveChanges();
             }
 
-            // Sembrar profesiones
             if (!context.Professions.Any())
             {
                 foreach (var profession in DataSeed.Professions)
@@ -38,10 +35,8 @@ namespace BuscoAPI.Helpers
 
         public static async Task SeedUsers(ApplicationDbContext context, SNDGService _sndgService)
         {
-            // Asegurarse de que la base de datos está creada
             context.Database.EnsureCreated();
 
-            //Traemos las provincias
             var provincias = await _sndgService.GetProvinces();
             var provinciasList = provincias.Provincias.Select(p => p.Nombre).ToList();
 
@@ -126,12 +121,10 @@ namespace BuscoAPI.Helpers
 
         public static async Task SeedProposals(ApplicationDbContext context)
         {
-            // Asegurarse de que la base de datos está creada
             context.Database.EnsureCreated();
 
             int maxNumberProposals = 15;
 
-            // Traer de la base de datos un número de usuarios
             var users = await context.Users
                 .Include(x => x.Worker)
                 .Where(x => x.Worker == null && x.Password.Equals("automatic"))
@@ -152,8 +145,8 @@ namespace BuscoAPI.Helpers
                 .RuleFor(p => p.MaxBudget, f => f.Finance.Amount(10000, 1000000))
                 .RuleFor(p => p.Image, f => f.Image.PicsumUrl())
                 .RuleFor(p => p.Status, _ => null)
-                .RuleFor(p => p.userId, _ => usersId[random.Next(usersId.Count)]) //Un id al azar
-                .RuleFor(p => p.professionId, _ => random.Next(1, totalProfessions)); //Un id al azar
+                .RuleFor(p => p.userId, _ => usersId[random.Next(usersId.Count)]) 
+                .RuleFor(p => p.professionId, _ => random.Next(1, totalProfessions)); 
 
             var proposals = faker.Generate(10);
 

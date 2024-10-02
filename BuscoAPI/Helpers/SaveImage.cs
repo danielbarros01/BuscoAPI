@@ -9,7 +9,6 @@ namespace BuscoAPI.Helpers
     {
         public async void SaveOrEditImage(UserImageDto user, User userDb, string container, IFileStore fileStore)
         {
-            //Save file
             if (user.Image != null)
             {
                 using (var memoryStream = new MemoryStream())

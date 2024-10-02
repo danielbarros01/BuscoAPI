@@ -36,15 +36,12 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                //Traigo al usuario
                 var user = await GetEntity.GetUser(HttpContext, context);
                 if (user == null) { return Unauthorized(); }
 
-                //mapeo
                 var proposal = mapper.Map<Proposal>(proposalCreation);
                 proposal.userId = user.Id;
 
-                //Guardar foto
                 var image = proposalCreation.Image;
                 if (image != null)
                 {
@@ -63,10 +60,8 @@ namespace BuscoAPI.Controllers
                     }
                 }
 
-                //Creo 
                 context.Proposals.Add(proposal);
-
-                await context.SaveChangesAsync();// Aquí es donde el Id se genera
+                await context.SaveChangesAsync();
 
                 return new CreatedAtRouteResult(
                     "GetProposal",
@@ -108,7 +103,6 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                //Traigo al usuario
                 var user = await GetEntity.GetUser(HttpContext, context);
                 if (user == null) { return Unauthorized(); }
 
@@ -125,7 +119,7 @@ namespace BuscoAPI.Controllers
                     using (var memoryStream = new MemoryStream())
                     {
                         await image.CopyToAsync(memoryStream);
-                        var content = memoryStream.ToArray(); //datos en bytes
+                        var content = memoryStream.ToArray(); 
                         var extension = Path.GetExtension(image.FileName);
 
                         proposal.Image = await fileStore.SaveFile(
@@ -290,7 +284,6 @@ namespace BuscoAPI.Controllers
                     return StatusCode(403, new ErrorInfo { Message = "La propuesta debe tener un trabajador asignado" });
                 }
 
-
                 proposal.Status = true; // propuesta finalizada
                 await context.SaveChangesAsync();
 
@@ -310,14 +303,12 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                //Traigo al usuario
                 var user = await GetEntity.GetUser(HttpContext, context);
                 if (user == null) { return Unauthorized(); }
 
                 var proposal = await context.Proposals.FirstOrDefaultAsync(x => x.Id == proposalId && x.userId == user.Id);
                 if (proposal == null) { return NotFound(new ErrorInfo { Field = "Error", Message = "No existe tal propuesta" }); }
 
-                //Traigo la aplicacion aceptada
                 var application = await context.Applications
                     .FirstOrDefaultAsync(x => x.ProposalId == proposalId && x.Status == true);
 
@@ -355,8 +346,7 @@ namespace BuscoAPI.Controllers
                 var queryable = context.Proposals
                    .Where(p => p.userId != user.Id)
                    .Include(p => p.profession)
-                   //.Include(p => p.user)
-                   .AsNoTracking(); // Se usa para mejorar el rendimiento si no se necesitan rastrear los cambios en las entidades
+                   .AsNoTracking();
 
 
                 if (filterCategoryId != null)
@@ -368,14 +358,6 @@ namespace BuscoAPI.Controllers
                 {
                     queryable = queryable.Where(x => EF.Functions.Like(x.profession.Name, $"%{query}%"));
                 }
-
-
-                /*
-                 Ordena las propuestas:
-                    Primero por ciudad.
-                    Dps por departamento, provincia y país.
-                    Finalmente por fecha de la propuesta de manera descendente.
-                 */
                 queryable = queryable
                     .OrderByDescending(x => x.user.City == ubication.City)
                     .ThenByDescending(x => x.user.Department == ubication.Department)

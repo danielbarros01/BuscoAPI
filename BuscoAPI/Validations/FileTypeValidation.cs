@@ -26,7 +26,6 @@ namespace BuscoAPI.Validations
                 return ValidationResult.Success;
             }
 
-            //parsear el dato a formFile
             IFormFile formFile = value as IFormFile;
 
             if (formFile == null)
@@ -34,13 +33,11 @@ namespace BuscoAPI.Validations
                 return ValidationResult.Success;
             }
 
-            //Si no se encuentra entre los tipos validos
             if (!validTypes.Contains(formFile.ContentType))
             {
                 return new ValidationResult($"El tipo de archivo debe ser uno de los siguientes: {string.Join(", ", validTypes)}");
             }
 
-            //Si no hay errores
             return ValidationResult.Success;
         }
     }

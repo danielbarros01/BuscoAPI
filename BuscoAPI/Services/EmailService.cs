@@ -29,22 +29,21 @@ namespace BuscoAPI.Services
             };
 
             using var smtp = new SmtpClient();
-            //Conectar a nuestro servidor
+      
             smtp.Connect(
                 configuration.GetSection("MailSettings:Host").Value,
                 Convert.ToInt32(configuration.GetSection("MailSettings:Port").Value),
                 SecureSocketOptions.StartTls
             );
 
-            //Autenticarnos
+
             smtp.Authenticate(
                 configuration.GetSection("MailSettings:Mail").Value,
                 configuration.GetSection("MailSettings:Password").Value
             );
 
-            //Enviar correo
+
             smtp.Send(email);
-            //Desconectarse del servidor
             smtp.Disconnect(true);
         }
     }

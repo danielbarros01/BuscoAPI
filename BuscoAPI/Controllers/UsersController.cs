@@ -29,7 +29,7 @@ namespace BuscoAPI.Controllers
         private readonly IMapper mapper;
         private readonly IEmailService emailService;
         private readonly IFileStore fileStore;
-        private readonly string container = "users"; //folder name
+        private readonly string container = "users"; 
 
         public UsersController(ApplicationDbContext context, IConfiguration configuration,
             IMapper mapper, IEmailService emailService, IFileStore fileStore)
@@ -66,7 +66,6 @@ namespace BuscoAPI.Controllers
                 //I created the random number to validate the email
                 var verificationCode = Helpers.Utility.RandomNumber(4);
 
-                //Create user with Hash for password
                 var user = new User
                 {
                     Email = userCreation.Email,
@@ -80,12 +79,10 @@ namespace BuscoAPI.Controllers
 
                 var userToken = await TokenHelper.BuildToken(userCreation, context, configuration);
 
-                //Send code to user's email
                 var emailReq = SendEmails.BuildEmailVerificationCode(verificationCode, "register", user.Username);
                 emailReq.ToEmail = userCreation.Email;
                 emailService.SendEmail(emailReq);
 
-                //Return the token to the client
                 return userToken;
             }
             catch (Exception ex)
@@ -104,7 +101,6 @@ namespace BuscoAPI.Controllers
 
                 if (userDb == null) return Unauthorized();
 
-                //verificar si es correcto el password
                 var isPasswordCorrect = BCrypt.Net.BCrypt.Verify(user.Password, userDb.Password);
 
                 if (!isPasswordCorrect)
@@ -128,7 +124,6 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                //Verify that the user exists
                 var userId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
                 var user = await context.Users.FirstOrDefaultAsync(x => x.Id == Int32.Parse(userId));
                 if (user == null) return Unauthorized();
@@ -138,7 +133,6 @@ namespace BuscoAPI.Controllers
                     return BadRequest(new ErrorInfo { Field = "Code", Message = "El codigo es incorrecto" });
                 }
 
-                //User confirmed a the code is removed 
                 user.Confirmed = true;
                 user.VerificationCode = null;
 
@@ -165,15 +159,11 @@ namespace BuscoAPI.Controllers
                     return BadRequest(new ErrorInfo { Field = "Code", Message = "El codigo es incorrecto" });
                 }
 
-                //Confirmo al usuario para saltar el paso que se confirme de nuevo
-                //Esto porque igualmente ya entro al correo por lo tanto es valido que es su correo
-                //Si el usuario ya estaba confirmado no altera nada
                 user.Confirmed = true;
                 user.VerificationCode = null;
 
                 await context.SaveChangesAsync();
 
-                //Mapeamos para poder usar el metodo BuildToken
                 var userMapper = mapper.Map<User, UserDTO>(user);
                 var userToken = await TokenHelper.BuildToken(userMapper, context, configuration);
                 return userToken;
@@ -192,17 +182,14 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                //Verify that the user exists
                 var userId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
                 var userDb = await context.Users.FirstOrDefaultAsync(x => x.Id == Int32.Parse(userId));
                 if (userDb == null) return Unauthorized();
 
-                //I created the random number to validate the email
                 var verificationCode = Helpers.Utility.RandomNumber(4);
 
                 userDb.VerificationCode = verificationCode;
 
-                //Send code to user's email
                 var emailReq = SendEmails.BuildEmailVerificationCode(verificationCode, "register", userDb.Username);
                 emailReq.ToEmail = userDb.Email;
                 emailService.SendEmail(emailReq);
@@ -231,7 +218,6 @@ namespace BuscoAPI.Controllers
                     return Unauthorized(new ErrorInfo { Field = "Confirmed", Message = "Debe confirmar su cuenta" });
                 }
 
-                //Para que solo se modifiquen los campos que son distintos entre user y userDb
                 userDb = mapper.Map(user, userDb);
 
                 context.Entry(userDb).State = EntityState.Modified;
@@ -270,14 +256,11 @@ namespace BuscoAPI.Controllers
             {
                 var userDb = await context.Users.FirstOrDefaultAsync(x => x.Email == email);
 
-                //Devolvemos un Ok por un tema de seguridad
                 if (userDb == null) return Ok();
 
-                //I created the random number to validate the email
                 var verificationCode = Helpers.Utility.RandomNumber(4);
                 userDb.VerificationCode = verificationCode;
 
-                //Send code to user's email
                 var emailReq = SendEmails.BuildEmailVerificationCode(verificationCode, "recover-password", userDb.Username);
                 emailReq.ToEmail = userDb.Email;
                 emailService.SendEmail(emailReq);
@@ -296,7 +279,6 @@ namespace BuscoAPI.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> ChangePassword([FromForm] String password)
         {
-            //Validar password
             if (string.IsNullOrEmpty(password) || password.Length < 6)
             {
                 return BadRequest(new ErrorInfo { Field = "Contraseña", Message = "La contraseña es un campo requerido de 6 caracteres minimo." });
@@ -304,15 +286,12 @@ namespace BuscoAPI.Controllers
 
             try
             {
-                //Obtengo el id del usuario
                 var userId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
                 if (userId == null) return Unauthorized(new ErrorInfo { Field = "Contraseña", Message = "Hubo un problema al validar el usuario." });
 
-                //Obtengo al usuario de la base de datos
                 var userDb = await context.Users.FirstOrDefaultAsync(x => x.Id == Int32.Parse(userId));
                 if (userDb == null) return Unauthorized(new ErrorInfo { Field = "Contraseña", Message = "Hubo un problema al validar el usuario." });
 
-                //Actualizo el campo
                 userDb.Password = HashPassword.HashingPassword(password);
                 await context.SaveChangesAsync();
 
@@ -331,11 +310,9 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                //Obtengo el id del usuario
                 var userId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
                 if (userId == null) return Unauthorized(new ErrorInfo { Field = "Contraseña", Message = "Hubo un problema al validar el usuario." });
 
-                //Obtengo al usuario de la base de datos
                 var userDb = await context.Users.FirstOrDefaultAsync(x => x.Id == Int32.Parse(userId));
                 if (userDb == null) return Unauthorized(new ErrorInfo { Field = "Contraseña", Message = "Hubo un problema al validar el usuario." });
 

@@ -3,8 +3,8 @@ namespace BuscoAPI.Services
 {
     public class LocalFileStore : IFileStore
     {
-        private readonly IWebHostEnvironment env; //Obtener ruta donde esta wwwroot
-        private readonly IHttpContextAccessor httpContextAccessor; //determinar el dominio donde esta webapi
+        private readonly IWebHostEnvironment env; 
+        private readonly IHttpContextAccessor httpContextAccessor; 
 
         public LocalFileStore(IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
         {
@@ -45,9 +45,8 @@ namespace BuscoAPI.Services
             }
 
             string ruta = Path.Combine(folder, nameFile);
-            await File.WriteAllBytesAsync(ruta, content); //write in hard disk
+            await File.WriteAllBytesAsync(ruta, content);
 
-            //scheme = http or https
             var currentUrl = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}";
             var urlToBd = Path.Combine(currentUrl, container, nameFile).Replace("\\", "/");
 

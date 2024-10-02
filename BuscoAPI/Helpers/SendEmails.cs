@@ -24,10 +24,7 @@ namespace BuscoAPI.Helpers
                 bottomMessage = "Si tú no has solicitado unirte a nuestra comunidad, por favor, ignora este mensaje.";
             }
 
-            // Convertir el código a cadena para determinar su longitud
             string codeString = code.ToString();
-
-            // Crear la sección de números dinámicamente según la longitud del código
             string numbersSection = "<div class=\"numbers\">";
             foreach (char digit in codeString)
             {
@@ -139,14 +136,13 @@ h1{
     </div>
 </body>";
 
-            // Crear una nueva instancia de MailRequest y asignar valores
+            
             var emailReq = new MailRequest()
             {
                 Subject = "Verification code for Busco app",
                 Body = html
             };
 
-            // Devolver el objeto MailRequest
             return emailReq;
         }
 

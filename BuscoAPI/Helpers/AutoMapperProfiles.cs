@@ -35,37 +35,23 @@ namespace BuscoAPI.Helpers
                 .ForMember(x => x.WorkersProfessions, opt => opt.MapFrom(src => src.WorkersProfessions));
 
 
-            //CreateMap<Worker, WorkerApplicationDTO>()
-            //.ForMember(x => x.WorkersProfessions, opt => opt.MapFrom(src => src.WorkersProfessions));
-
-
             CreateMap<WorkersProfessions, WorkersProfessionsDTO>()
                 .ForMember(x => x.Profession, opt => opt.MapFrom(src => src.Profession));
 
-            //De ProposalCreation a Proposal
             CreateMap<ProposalCreationDTO, Proposal>()
                 .ForMember(x => x.Image, opt => opt.Ignore());
 
-
-
-            //De Proposal a ProposalDTO
             CreateMap<Proposal, ProposalDTO>();
             
-            //De Application a ApplicationDTO
             CreateMap<Application, ApplicationDTO>();
 
-            //De Worker a WorkerApplicationDTO
             CreateMap<Worker, WorkerApplicationDTO>();
             
-            //De User a UserApplicationDTO
             CreateMap<User, UserApplicationDTO>();
 
-            //De QualificationCreationDTO a Qualification
             CreateMap<QualificationCreationDTO, Qualification>().ReverseMap();
             
-            //De Qualification
             CreateMap<Qualification, QualificationDTO>();
-
 
             CreateMap<Chat, ChatDTO>();
 

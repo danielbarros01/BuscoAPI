@@ -62,7 +62,6 @@ namespace BuscoAPI.RealTime
                     });
                 }
 
-                //Mapear 
                 var chatsMapped = mapper.Map<List<ChatDTO>>(chats);
                 await Clients.User(userId.ToString()).SendAsync("Chats", chatsMapped);
             }
@@ -90,7 +89,6 @@ namespace BuscoAPI.RealTime
             var userId = int.Parse(Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
 
-            // Convertir los identificadores de usuario a string
             var userIds = new List<string> { userIdReceiver.ToString(), userId.ToString() };
 
             var newMessage = new Message

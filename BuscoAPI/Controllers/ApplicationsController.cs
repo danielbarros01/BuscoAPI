@@ -33,25 +33,20 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                //Traigo al usuario
                 var user = await GetEntity.GetUser(HttpContext, context);
                 if (user == null) { return Unauthorized(); }
 
-                //Valido que sea trabajador
                 var isWorker = await context.Workers.AnyAsync(w => w.UserId == user.Id);
                 if (!isWorker)
                 {
                     return Forbid();
                 }
 
-                //Traigo la propuesta y verifico que no sea nula y del mismo usuario
                 var proposal = await context.Proposals
                     .FirstOrDefaultAsync(x => x.Id == proposalId);
                 if (proposal == null) { return NotFound(new ErrorInfo { Field = "Error", Message = "No existe tal propuesta " }); }
                 if (proposal.userId == user.Id) { return NotFound(new ErrorInfo { Field = "Error", Message = "No puedes postularte a una propuesta de tu auditoria" }); }
 
-
-                //Verificar que no exista la aplicacion
                 var applicationExist = await context.Applications
                     .AnyAsync(x => x.WorkerUserId == user.Id && x.ProposalId == proposal.Id);
 
@@ -82,26 +77,21 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                //Traigo al usuario
                 var user = await GetEntity.GetUser(HttpContext, context);
                 if (user == null) { return Unauthorized(); }
 
-                //Traigo la propuesta
                 var proposal = await context.Proposals
                     .FirstOrDefaultAsync(x => x.Id == proposalId);
                 if (proposal == null) { return NotFound(new ErrorInfo { Field = "Error", Message = "No existe tal propuesta " }); }
                 if (proposal.Status == false)
                 {
-                    //En proceso de trabajo
                     return StatusCode(403, new ErrorInfo { Message = "Ya hay un trabajador asignado" });
                 }
                 if (proposal.Status == true)
                 {
-                    //Ya terminada
                     return StatusCode(403, new ErrorInfo { Message = "Esta propuesta ya esta finalizada" });
                 }
 
-                //Verificar que exista la aplicacion
                 var application = await context.Applications
                     .FirstOrDefaultAsync(x => x.WorkerUserId == user.Id && x.ProposalId == proposalId);
 
@@ -124,18 +114,15 @@ namespace BuscoAPI.Controllers
             }
         }
 
-        //Dueno de la propuesta elige un postulante
         [HttpPatch("{proposalId}/{applicationId}", Name = "ChangeStatusApplication")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> ChangeStatusApplication([FromQuery] bool status, int proposalId, int applicationId)
         {
             try
             {
-                //Traigo al usuario
                 var user = await GetEntity.GetUser(HttpContext, context);
                 if (user == null) { return Unauthorized(); }
 
-                //Traigo la propuesta
                 var proposal = await context.Proposals
                     .FirstOrDefaultAsync(x => x.Id == proposalId);
                 if (proposal == null)
@@ -148,22 +135,18 @@ namespace BuscoAPI.Controllers
                 }
                 if (proposal.Status == false)
                 {
-                    //En proceso de trabajo
                     return StatusCode(403, new ErrorInfo { Message = "Ya hay un trabajador asignado" });
                 }
                 if (proposal.Status == true)
                 {
-                    //Ya terminada
                     return StatusCode(403, new ErrorInfo { Message = "Esta propuesta ya esta finalizada" });
                 }
 
-                //Verificar que exista la aplicacion
                 var application = await context.Applications
                     .FirstOrDefaultAsync(x => x.Id == applicationId && x.ProposalId == proposalId);
 
                 if (application == null) { return NotFound(new ErrorInfo { Field = "Error", Message = "No existe la aplicacion" }); }
 
-                //Actualizar estados
                 if (status)
                 {
                     application.Status = true; //Aplicacion aceptada
@@ -174,9 +157,7 @@ namespace BuscoAPI.Controllers
                     application.Status = false; //Aplicacion rechazada
                 }
 
-                // Guardar los cambios en la base de datos
                 await context.SaveChangesAsync();
-
                 return NoContent();
             }
             catch (Exception ex)
@@ -193,7 +174,6 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                //Verificar que la propuesta existe
                 var proposalExist = await context.Proposals.AnyAsync(x => x.Id == proposalId);
                 if (!proposalExist)
                 {
@@ -228,7 +208,6 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                //Verificar que la propuesta existe
                 var proposalExist = await context.Proposals.AnyAsync(x => x.Id == proposalId);
                 if (!proposalExist)
                 {
@@ -263,7 +242,6 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                //Traigo al usuario
                 var user = await GetEntity.GetUser(HttpContext, context);
                 if (user == null) { return Unauthorized(); }
 

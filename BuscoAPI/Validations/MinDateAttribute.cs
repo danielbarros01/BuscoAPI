@@ -10,7 +10,7 @@ namespace BuscoAPI.Validations
 
         public override bool IsValid(object value)
         {
-            if(value == null) return true; // La validación de nulo debería ser manejada por RequiredAttribute
+            if(value == null) return true;
 
             var date = (DateTime)value;
             var minDate = new DateTime(Year, Month, Day);

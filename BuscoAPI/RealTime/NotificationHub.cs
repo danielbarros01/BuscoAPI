@@ -24,7 +24,6 @@ namespace BuscoAPI.RealTime
         {
             var userId = int.Parse(Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            //Crear notificacion
             var notification = mapper.Map<Notification>(notificationDTO);
             notification.UserSenderId = userId;
 

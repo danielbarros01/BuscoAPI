@@ -12,8 +12,6 @@ namespace BuscoAPI.Helpers
                 new ProfessionCategory { Id = 4, Name = "Instalaciones"},
                 new ProfessionCategory { Id = 5, Name = "Limpieza"},
                 new ProfessionCategory { Id = 6, Name = "Tecnología"}
-                //new ProfessionCategory { Id = 7, Name = "Decoracion y acabados"},
-
             };
 
         //Crear profesiones

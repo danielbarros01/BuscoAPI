@@ -15,7 +15,6 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
-// Add services to the container.
 
 builder.Services
     .AddControllers()
@@ -24,17 +23,13 @@ builder.Services
 builder.Services.AddSignalR();
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddHttpClient(); //para consumir apis
-builder.Services.AddHttpClient<SNDGService>(); //para consumir api de ubicaciones
+builder.Services.AddHttpClient(); //to consume api
+builder.Services.AddHttpClient<SNDGService>(); //to consume SNDG Service api
 
 
-//Configure IFileStore
 builder.Services.AddTransient<IFileStore, LocalFileStore>();
-
-//Config automapper
 builder.Services.AddAutoMapper(typeof(Program));
 
-//Configure MySQL
 builder.Services.AddDbContext<ApplicationDbContext>(
     options => options.UseMySql(
         configuration["ConnectionStrings:MySqlConnection"],
@@ -42,7 +37,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(
     )
 );
 
-//Configure JWT and Google Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -55,8 +49,8 @@ builder.Services.AddAuthentication(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false, // Assuming you're issuing the JWT tokens yourself
-            ValidateAudience = false, // Assuming you're not using an audience
+            ValidateIssuer = false, 
+            ValidateAudience = false, 
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["jwt:key"])),
@@ -69,12 +63,8 @@ builder.Services.AddAuthentication(options =>
         options.ClientSecret = configuration["Authentication:Google:ClientSecret"];
     });
 
-//Configure email service
 builder.Services.AddScoped<IEmailService, EmailService>();
-
 builder.WebHost.UseUrls("http://localhost:5029", "http://192.168.1.73:5029", "http://*:5029");
-
-
 
 var app = builder.Build();
 
@@ -99,7 +89,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseStaticFiles();
 
-app.UseRouting();// Asegúrate de que esto esté antes de UseAuthorization y UseEndpoints
+app.UseRouting();
 
 app.UseAuthorization();
 

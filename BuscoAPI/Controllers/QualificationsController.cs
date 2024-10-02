@@ -32,8 +32,6 @@ namespace BuscoAPI.Controllers
                 var user = await GetEntity.GetUser(HttpContext, context);
                 if (user == null) { return Unauthorized(); }
 
-
-                //SI YA EXISTE LA CALIFICACION NO CREARLA
                 var qualificationExists = await context.WorkerQualifications
                     .AnyAsync(q => q.UserId == qualificationCreation.WorkerUserId && q.UserId == user.Id);
 
@@ -79,16 +77,13 @@ namespace BuscoAPI.Controllers
 
                 if (count > 0)
                 {
-                    // Calcula el promedio total de calificaciones
                     averageScore = await totalQueryable.AverageAsync(q => q.Score);
 
-                    //Calcular frecuencia de cada calificacion
                     ratingFrequencies = await totalQueryable
                         .GroupBy(q => q.Score)
                         .Select(g => new { Score = (int)g.Key, Frequency = g.Count() })
                         .ToDictionaryAsync(g => g.Score, g => g.Frequency);
 
-                    // Asegurarse de que todas las calificaciones del 1 al 5 estan presentes
                     for (int i = 1; i <= 5; i++)
                     {
                         if (!ratingFrequencies.ContainsKey(i))
@@ -100,7 +95,7 @@ namespace BuscoAPI.Controllers
 
                 var queryable = totalQueryable
                     .Where(q => stars != null ? q.Score == (float)stars : q.Score > 0)
-                    .Include(q => q.User) //Usuario que califico
+                    .Include(q => q.User) 
                     .OrderByDescending(q => q.Date)
                     .AsQueryable();
 

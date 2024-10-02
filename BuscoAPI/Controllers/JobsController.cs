@@ -37,7 +37,6 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                //Traigo al usuario
                 var user = await GetEntity.GetUser(HttpContext, context);
                 if (user == null) { return Unauthorized(); }
 
@@ -77,7 +76,6 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                //la propuesta debe estar terminada, y en aplicaciones la que este seleccionada es el usuario
                 var queryable = context.Proposals
                     .Where(p => p.Status == true && p.Applications.Any(a => a.Status == true && a.WorkerUserId == userId))
                     .AsQueryable();

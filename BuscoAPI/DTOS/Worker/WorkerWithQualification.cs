@@ -17,7 +17,5 @@ namespace BuscoAPI.DTOS.Worker
         public UserApplicationDTO? User { get; set; }
 
         public float? AverageQualification { get; set; }
-        //public int NumberOfQualifications { get; set; }
-        //public float AverageQualification { get; set; }
     }
 }

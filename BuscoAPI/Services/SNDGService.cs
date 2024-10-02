@@ -24,7 +24,6 @@ namespace BuscoAPI.Services
             return JsonConvert.DeserializeObject<GeoData>(responseContent);
         }
 
-        //DEBO PONER LA PROVINCIA DE PARAMETRO
         public async Task<GeoData> GetDepartments(String provincia)
         {
             var response = await _httpClient

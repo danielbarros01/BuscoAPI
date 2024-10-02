@@ -14,7 +14,6 @@ namespace BuscoAPI.Helpers
         {
             var claims = new List<Claim>(){};
 
-            //Si existen email y username
             if(!string.IsNullOrEmpty(userCreation.Email)){
                 claims.Add(new Claim(ClaimTypes.Email, userCreation.Email));
             }

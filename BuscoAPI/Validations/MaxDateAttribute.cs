@@ -10,7 +10,7 @@ namespace BuscoAPI.Validations
         {
             if (value == null)
             {
-                return true; // La validación de nulo debería ser manejada por RequiredAttribute
+                return true; 
             }
 
             var date = (DateTime)value;

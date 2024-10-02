@@ -7,10 +7,8 @@ namespace BuscoAPI.Helpers
     {
         public static async Task<User?> GetUser(HttpContext httpContext, ApplicationDbContext context)
         {
-            //Obtengo al usuario y valido que existe
             var userId = UtilItyAuth.GetUserIdFromClaims(httpContext);
 
-            // Validar que userId no sea nulo
             if (userId == null)
             {
                 return null;
@@ -23,10 +21,8 @@ namespace BuscoAPI.Helpers
 
         public static async Task<Worker?> GetWorker(HttpContext httpContext, ApplicationDbContext context)
         {
-            //Obtengo al usuario y valido que existe
             var userId = UtilItyAuth.GetUserIdFromClaims(httpContext);
 
-            // Validar que userId no sea nulo
             if (userId == null)
             {
                 return null;

@@ -41,23 +41,19 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                //Obtengo al usuario y valido que existe
                 var userId = UtilItyAuth.GetUserIdFromClaims(HttpContext);
                 var user = await context.Users.FirstOrDefaultAsync(x => x.Id == userId);
                 if (user == null) return Unauthorized();
 
-                //Valido que no exista como trabajador
                 var workerExists = await context.Workers.AnyAsync(x => x.UserId == user.Id);
                 if (workerExists) return Conflict(new ErrorInfo { Field = "Worker", Message = "El Trabajador ya esta registrado." });
 
                 //Mapeo
                 var workerMapper = mapper.Map<Worker>(workerCreation);
-                workerMapper.UserId = user.Id; //Le pongo el Id del usuario
+                workerMapper.UserId = user.Id; 
 
-                //Debo crear en la tabla Worker tiene cierta profesion
                 workerCreation.ProfessionsId.ForEach(professionId =>
                 {
-                    //Creo las profesiones
                     context.WorkersProfessions.Add(new WorkersProfessions
                     {
                         WorkerId = user.Id,
@@ -65,9 +61,7 @@ namespace BuscoAPI.Controllers
                     });
                 });
 
-                //Creo 
                 context.Workers.Add(workerMapper);
-
                 await context.SaveChangesAsync();
 
                 return Ok();
@@ -83,7 +77,6 @@ namespace BuscoAPI.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> Edit([FromBody] WorkerCreationDTO workerDto)
         {
-            //traer usuario
             var worker = await GetEntity.GetWorker(HttpContext, context);
             if (worker == null) return NotFound(new ErrorInfo { Field = "Error", Message = "No esta registrado como trabajador" });
 
@@ -93,13 +86,9 @@ namespace BuscoAPI.Controllers
 
 
             var newProfessions = workerDto.ProfessionsId;
-            //Agrego profesiones nuevas que no esten vinculadas
-            //Borro profesiones ya no vinculadas
             await HelperProfessions.UpdateWorkerProfessions(worker.UserId, newProfessions, workersProfessions, context);
 
-            // Mapeo las propiedades del DTO al objeto worker existente
             worker = mapper.Map(workerDto, worker);
-            // Marco el estado del objeto worker como modificado en el contexto de la base de datos
             context.Entry(worker).State = EntityState.Modified;
 
             await context.SaveChangesAsync();
@@ -140,7 +129,7 @@ namespace BuscoAPI.Controllers
                     .Include(x => x.Worker)
                         .ThenInclude(x => x.WorkersProfessions)
                             .ThenInclude(x => x.Profession)
-                    .Where(x => x.Worker != null && x.Id != user.Id) //trabajador no sea null y no me incluya a mi
+                    .Where(x => x.Worker != null && x.Id != user.Id) 
                     .OrderByDescending(x => x.City != null && x.City == user.City)
                     .ThenByDescending(x => x.Department != null && x.Department == user.Department)
                     .ThenByDescending(x => x.Province != null && x.Province == user.Province)
@@ -185,7 +174,7 @@ namespace BuscoAPI.Controllers
                    .Include(w => w.Qualifications)
                    .Include(w => w.WorkersProfessions)
                     .ThenInclude(wp => wp.Profession)
-                   .AsNoTracking(); // Se usa para mejorar el rendimiento si no se necesitan rastrear los cambios en las entidades
+                   .AsNoTracking(); 
 
 
                 if (filterCategoryId != null)
