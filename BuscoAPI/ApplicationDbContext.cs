@@ -1,12 +1,12 @@
-﻿using BuscoAPI.DTOS.Worker;
-using BuscoAPI.Entities;
+﻿using BuscoAPI.Entities;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
 
 namespace BuscoAPI
 {
     public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions options) : base(options){}
+        public ApplicationDbContext(DbContextOptions options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
         public DbSet<ProfessionCategory> Categories { get; set; }
@@ -15,19 +15,16 @@ namespace BuscoAPI
         public DbSet<WorkersProfessions> WorkersProfessions { get; set; }
         public DbSet<Proposal> Proposals { get; set; }
         public DbSet<Application> Applications { get; set; }
-        public DbSet<Qualification> WorkerQualifications { get; set; }
+        public DbSet<Qualification> WorkerQualification { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //La tabla en BD es 
-            //La llave compuesta
             modelBuilder.Entity<WorkersProfessions>()
                 .ToTable("Workers_has_Professions")
-                .HasKey(x => new {x.WorkerId, x.ProfessionId});
+                .HasKey(x => new { x.WorkerId, x.ProfessionId });
 
-            //La llave es
             modelBuilder.Entity<Worker>()
                 .HasKey(x => new { x.UserId });
 
@@ -43,3 +40,4 @@ namespace BuscoAPI
         }
     }
 }
+

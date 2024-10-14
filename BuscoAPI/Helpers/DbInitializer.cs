@@ -33,41 +33,41 @@ namespace BuscoAPI.Helpers
             }
         }
 
-        public static async Task SeedUsers(ApplicationDbContext context, SNDGService _sndgService)
-        {
-            context.Database.EnsureCreated();
+        //public static async Task SeedUsers(ApplicationDbContext context, SNDGService _sndgService)
+        //{
+        //    context.Database.EnsureCreated();
 
-            var provincias = await _sndgService.GetProvinces();
-            var provinciasList = provincias.Provincias.Select(p => p.Nombre).ToList();
+        //    var provincias = await _sndgService.GetProvinces();
+        //    var provinciasList = provincias.Provincias.Select(p => p.Nombre).ToList();
 
-            var faker = new Faker<User>()
-                .RuleFor(u => u.Name, f => f.Name.FirstName())
-                .RuleFor(u => u.Lastname, f => f.Name.LastName())
-                .RuleFor(u => u.Username, f => f.Internet.UserName())
-                .RuleFor(u => u.Email, f => f.Internet.Email())
-                .RuleFor(u => u.Password, f => "automatic")
-                //fechas de nacimiento entre hace 50 años y hace 18 años.
-                .RuleFor(u => u.Birthdate, f => f.Date.BetweenOffset(DateTime.Now.AddYears(-50), DateTime.Now.AddYears(-18)).DateTime)
-                .RuleFor(u=> u.Image, f => f.Image.LoremFlickrUrl())
-                .RuleFor(u => u.Country, f => "Argentina")
-                .RuleFor(u => u.Province, f => f.PickRandom(provinciasList))
-                .RuleFor(u => u.Department, (f, u) =>
-                {
-                    var departamentos = _sndgService.GetDepartments(u.Province).Result.Departamentos.Select(d => d.Nombre).ToList();
-                    return f.PickRandom(departamentos);
-                })
-                .RuleFor(u => u.City, (f, u) =>
-                {
-                    var ciudades = _sndgService.GetCiudades(u.Province, u.Department).Result.localidades_censales.Select(c => c.Nombre).ToList();
-                    return f.PickRandom(ciudades);
-                })
-                .RuleFor(u => u.Confirmed, f => true);
+        //    var faker = new Faker<User>()
+        //        .RuleFor(u => u.Name, f => f.Name.FirstName())
+        //        .RuleFor(u => u.Lastname, f => f.Name.LastName())
+        //        .RuleFor(u => u.Username, f => f.Internet.UserName())
+        //        .RuleFor(u => u.Email, f => f.Internet.Email())
+        //        .RuleFor(u => u.Password, f => "automatic")
+        //        //fechas de nacimiento entre hace 50 años y hace 18 años.
+        //        .RuleFor(u => u.Birthdate, f => f.Date.BetweenOffset(DateTime.Now.AddYears(-50), DateTime.Now.AddYears(-18)).DateTime)
+        //        .RuleFor(u=> u.Image, f => f.Image.LoremFlickrUrl())
+        //        .RuleFor(u => u.Country, f => "Argentina")
+        //        .RuleFor(u => u.Province, f => f.PickRandom(provinciasList))
+        //        .RuleFor(u => u.Department, (f, u) =>
+        //        {
+        //            var departamentos = _sndgService.GetDepartments(u.Province).Result.Departamentos.Select(d => d.Nombre).ToList();
+        //            return f.PickRandom(departamentos);
+        //        })
+        //        .RuleFor(u => u.City, (f, u) =>
+        //        {
+        //            var ciudades = _sndgService.GetCiudades(u.Province, u.Department).Result.localidades_censales.Select(c => c.Nombre).ToList();
+        //            return f.PickRandom(ciudades);
+        //        })
+        //        .RuleFor(u => u.Confirmed, f => true);
 
-            var users = faker.Generate(10);
+        //    var users = faker.Generate(10);
 
-            context.Users.AddRange(users);
-            context.SaveChanges();
-        }
+        //    context.Users.AddRange(users);
+        //    context.SaveChanges();
+        //}
 
 
         public static async Task SeedWorkers(ApplicationDbContext context, IMapper mapper)

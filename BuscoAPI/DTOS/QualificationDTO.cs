@@ -7,7 +7,7 @@ namespace BuscoAPI.DTOS
     public class QualificationDTO
     {
         public int Id { get; set; }
-        public double Score { get; set; }
+        public int Score { get; set; }
         public string Commentary { get; set; }
         public DateTime Date { get; set; }
 

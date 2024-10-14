@@ -386,7 +386,5 @@ namespace BuscoAPI.Controllers
             var users = await context.Users.ToListAsync();
             return Ok(users);
         }
-
-
     }
 }

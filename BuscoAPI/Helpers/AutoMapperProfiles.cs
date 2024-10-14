@@ -6,6 +6,8 @@ using BuscoAPI.DTOS.Proposals;
 using BuscoAPI.DTOS.Users;
 using BuscoAPI.DTOS.Worker;
 using BuscoAPI.Entities;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
 
 namespace BuscoAPI.Helpers
 {
@@ -13,24 +15,36 @@ namespace BuscoAPI.Helpers
     {
         public AutoMapperProfiles()
         {
+            var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
+
             CreateMap<UserPutDto, User>()
-                .ForMember(x => x.Image, options => options.Ignore());
+                .ForMember(x => x.Image, options => options.Ignore())
+                .ForMember(x => x.Ubication, x => x.MapFrom(y =>
+                    geometryFactory.CreatePoint(new Coordinate(y.Longitude, y.Latitude))));
 
             CreateMap<User, UserDTO>()
-                .ForMember(x => x.Worker, opt => opt.MapFrom(src => src.Worker));
+                .ForMember(x => x.Worker, opt => opt.MapFrom(src => src.Worker))
+                .ForMember(x => x.Latitude, x => x.MapFrom(y => y.Ubication.Y))
+                .ForMember(x => x.Longitude, x => x.MapFrom(y => y.Ubication.X));
+
 
             CreateMap<User, UserBasicDTO>()
-                .ForMember(x => x.Worker, opt => opt.MapFrom(src => src.Worker));
+                .ForMember(x => x.Worker, opt => opt.MapFrom(src => src.Worker))
+                .ForMember(x => x.Latitude, x => x.MapFrom(y => y.Ubication.Y))
+                .ForMember(x => x.Longitude, x => x.MapFrom(y => y.Ubication.X));
 
-            //De WorkerCreationDTO a Worker
+            CreateMap<User, UserWithoutWorker>()
+                .ForMember(x => x.Latitude, x => x.MapFrom(y => y.Ubication.Y))
+                .ForMember(x => x.Longitude, x => x.MapFrom(y => y.Ubication.X));
+
             CreateMap<WorkerCreationDTO, Worker>();
 
             CreateMap<Worker, WorkerDTO>()
-                .ForMember(x => x.WorkersProfessions, opt => opt.MapFrom(src => src.WorkersProfessions));
-            
+                .ForMember(x => x.Professions, opt => opt.MapFrom(src => src.WorkersProfessions.Select(x => x.Profession)));
+
             CreateMap<Worker, WorkerWithoutUser>()
                 .ForMember(x => x.WorkersProfessions, opt => opt.MapFrom(src => src.WorkersProfessions));
-            
+
             CreateMap<Worker, WorkerWithQualification>()
                 .ForMember(x => x.WorkersProfessions, opt => opt.MapFrom(src => src.WorkersProfessions));
 
@@ -42,15 +56,15 @@ namespace BuscoAPI.Helpers
                 .ForMember(x => x.Image, opt => opt.Ignore());
 
             CreateMap<Proposal, ProposalDTO>();
-            
+
             CreateMap<Application, ApplicationDTO>();
 
             CreateMap<Worker, WorkerApplicationDTO>();
-            
+
             CreateMap<User, UserApplicationDTO>();
 
             CreateMap<QualificationCreationDTO, Qualification>().ReverseMap();
-            
+
             CreateMap<Qualification, QualificationDTO>();
 
             CreateMap<Chat, ChatDTO>();

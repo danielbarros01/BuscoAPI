@@ -4,7 +4,9 @@ using BuscoAPI.Services;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -23,8 +25,14 @@ namespace BuscoAPI
         {
             services
                 .AddControllers()
-                .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles); //Esto indica que se debe ignorar cualquier referencia circular o relación cíclica durante la serialización JSON
-
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                    options.JsonSerializerOptions.IncludeFields = true;
+                }
+            );
+            
             services.AddSignalR();
 
             services.AddHttpContextAccessor();
@@ -35,12 +43,15 @@ namespace BuscoAPI
             services.AddTransient<IFileStore, LocalFileStore>();
             services.AddAutoMapper(typeof(Program));
 
-            services.AddDbContext<ApplicationDbContext>(
-                options => options.UseMySql(
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseMySql(
                     configuration["ConnectionStrings:MySqlConnection"],
-                    ServerVersion.AutoDetect(configuration["ConnectionStrings:MySqlConnection"])
+                    ServerVersion.AutoDetect(configuration["ConnectionStrings:MySqlConnection"]),
+                    mySqlOptions => mySqlOptions.UseNetTopologySuite() 
                 )
             );
+
+
 
             services.AddAuthentication(options =>
             {
@@ -70,7 +81,7 @@ namespace BuscoAPI
 
             services.AddScoped<IEmailService, EmailService>();
         }
-    
+
         public void Configure(WebApplication app)
         {
             app.UseStaticFiles();
@@ -81,12 +92,12 @@ namespace BuscoAPI
 
             app.MapControllers();
 
-           app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                endpoints.MapHub<ChatHub>("/chathub");
-                endpoints.MapHub<NotificationHub>("/notificationhub");
-            });
+            app.UseEndpoints(endpoints =>
+             {
+                 endpoints.MapControllers();
+                 endpoints.MapHub<ChatHub>("/chathub");
+                 endpoints.MapHub<NotificationHub>("/notificationhub");
+             });
         }
     }
 }

@@ -50,7 +50,7 @@ namespace BuscoAPI.Controllers
 
                 //Mapeo
                 var workerMapper = mapper.Map<Worker>(workerCreation);
-                workerMapper.UserId = user.Id; 
+                workerMapper.UserId = user.Id;
 
                 workerCreation.ProfessionsId.ForEach(professionId =>
                 {
@@ -116,31 +116,29 @@ namespace BuscoAPI.Controllers
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("recommendations")]
-        public async Task<ActionResult<List<UserDTO>>> GetRecommendedWorkers([FromQuery] PaginationDTO pagination)
+        public async Task<ActionResult<List<WorkerDTO>>> GetRecommendedWorkers([FromQuery] PaginationDTO pagination)
         {
             try
             {
                 var user = await GetEntity.GetUser(HttpContext, context);
                 if (user == null) return Unauthorized(new ErrorInfo { Field = "Error", Message = "Debe estar autenticado." });
 
-                var queryable = context.Users
-                    .Include(x => x.Worker)
-                        .ThenInclude(w => w.Qualifications)
-                    .Include(x => x.Worker)
-                        .ThenInclude(x => x.WorkersProfessions)
-                            .ThenInclude(x => x.Profession)
-                    .Where(x => x.Worker != null && x.Id != user.Id) 
-                    .OrderByDescending(x => x.City != null && x.City == user.City)
-                    .ThenByDescending(x => x.Department != null && x.Department == user.Department)
-                    .ThenByDescending(x => x.Province != null && x.Province == user.Province)
-                    .ThenByDescending(x => x.Country != null && x.Country == user.Country)
-                    .AsQueryable();
-
+                var queryable = context.Workers
+                    .Include(w => w.Qualifications)
+                    .Include(w => w.WorkersProfessions)
+                        .ThenInclude(wp => wp.Profession)
+                    .Include(w => w.User)
+                    .Where(w => w.UserId != user.Id)
+                    .OrderBy(w => w.User.Ubication.Distance(user.Ubication))
+                    .AsNoTracking();
+                    
                 await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
 
-                var recommendedWorgingUsers = await queryable.Paginate(pagination).ToListAsync();
+                var recommendedWorgingUsers = await queryable
+                    .Paginate(pagination)
+                    .ToListAsync();
 
-                var mappedList = mapper.Map<List<UserDTO>>(recommendedWorgingUsers);
+                var mappedList = mapper.Map<List<WorkerDTO>>(recommendedWorgingUsers);
 
                 return mappedList;
             }
@@ -174,7 +172,7 @@ namespace BuscoAPI.Controllers
                    .Include(w => w.Qualifications)
                    .Include(w => w.WorkersProfessions)
                     .ThenInclude(wp => wp.Profession)
-                   .AsNoTracking(); 
+                   .AsNoTracking();
 
 
                 if (filterCategoryId != null)
@@ -194,26 +192,16 @@ namespace BuscoAPI.Controllers
                 if (filterQualification != null)
                 {
                     queryable = queryable
-                        .Where(w => w.Qualifications.Average(q => q.Score) >= filterQualification 
+                        .Where(w => w.Qualifications.Average(q => q.Score) >= filterQualification
                         && w.Qualifications.Average(q => q.Score) < filterQualification + 1);
                 }
 
-                /*
-                 Ordena las propuestas:
-                    Primero por ciudad.
-                    Dps por departamento, provincia y país.
-                    Finalmente por fecha de la propuesta de manera descendente.
-                 */
-                queryable = queryable
-                    .OrderByDescending(x => x.User.City == ubication.City)
-                    .ThenByDescending(x => x.User.Department == ubication.Department)
-                    .ThenByDescending(x => x.User.Province == ubication.Province)
-                    .ThenByDescending(x => x.User.Country == ubication.Country);
+                queryable = queryable.OrderBy(w => w.User.Ubication.Distance(user.Ubication));
 
                 await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
                 var workers = await queryable.Paginate(pagination).ToListAsync();
 
-                var mapperWorkers = mapper.Map<List<WorkerWithQualification>>(workers);
+                var mapperWorkers = mapper.Map<List<WorkerDTO>>(workers);
 
                 return Ok(mapperWorkers);
             }

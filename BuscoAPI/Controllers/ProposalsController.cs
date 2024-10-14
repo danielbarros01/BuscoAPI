@@ -220,44 +220,44 @@ namespace BuscoAPI.Controllers
             }
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet("recommendations")]
-        public async Task<ActionResult<List<Proposal>>> GetRecommendedProposals(
-            [FromQuery] PaginationDTO pagination
-            )
-        {
-            try
-            {
-                var user = await GetEntity.GetUser(HttpContext, context);
-                if (user == null) return Unauthorized(new ErrorInfo { Field = "Error", Message = "Debe estar autenticado." });
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        //[HttpGet("recommendations")]
+        //public async Task<ActionResult<List<Proposal>>> GetRecommendedProposals(
+        //    [FromQuery] PaginationDTO pagination
+        //    )
+        //{
+        //    try
+        //    {
+        //        var user = await GetEntity.GetUser(HttpContext, context);
+        //        if (user == null) return Unauthorized(new ErrorInfo { Field = "Error", Message = "Debe estar autenticado." });
 
-                var isWorker = await context.Workers.AnyAsync(w => w.UserId == user.Id);
-                if (!isWorker)
-                {
-                    return Forbid();
-                }
+        //        var isWorker = await context.Workers.AnyAsync(w => w.UserId == user.Id);
+        //        if (!isWorker)
+        //        {
+        //            return Forbid();
+        //        }
 
-                var queryable = context.Proposals
-                    .Where(x => x.Status == null && x.userId != user.Id) //null significa que esta sin trabajador, ergo Disponible
-                    .Include(x => x.user)
-                    .Include(x => x.profession)
-                    .OrderByDescending(x => x.user.City != null && x.user.City == user.City)
-                    .ThenByDescending(x => x.user.Department != null && x.user.Department == user.Department)
-                    .ThenByDescending(x => x.user.Province != null && x.user.Province == user.Province)
-                    .ThenByDescending(x => x.user.Country != null && x.user.Country == user.Country)
-                    .AsQueryable();
+        //        var queryable = context.Proposals
+        //            .Where(x => x.Status == null && x.userId != user.Id) //null significa que esta sin trabajador, ergo Disponible
+        //            .Include(x => x.user)
+        //            .Include(x => x.profession)
+        //            .OrderByDescending(x => x.user.City != null && x.user.City == user.City)
+        //            .ThenByDescending(x => x.user.Department != null && x.user.Department == user.Department)
+        //            .ThenByDescending(x => x.user.Province != null && x.user.Province == user.Province)
+        //            .ThenByDescending(x => x.user.Country != null && x.user.Country == user.Country)
+        //            .AsQueryable();
 
-                await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
+        //        await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
 
-                var recommendedProposals = await queryable.Paginate(pagination).ToListAsync();
-                return recommendedProposals;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return StatusCode(500, "An error occurred");
-            }
-        }
+        //        var recommendedProposals = await queryable.Paginate(pagination).ToListAsync();
+        //        return recommendedProposals;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine(ex.Message);
+        //        return StatusCode(500, "An error occurred");
+        //    }
+        //}
 
 
         [HttpPatch("{id}/finalize")]
@@ -328,56 +328,56 @@ namespace BuscoAPI.Controllers
         }
 
 
-        [HttpGet("search")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult<List<WorkerWithQualification>>> SearchProposals(
-            [FromQuery] string query,
-            [FromQuery] int? filterCategoryId,
-            [FromQuery] Ubication ubication,
-            [FromQuery] PaginationDTO pagination
-            )
-        {
-            try
-            {
-                var user = await GetEntity.GetUser(HttpContext, context);
-                if (user == null) return Unauthorized(new ErrorInfo { Field = "Error", Message = "Debe estar autenticado." });
+        //[HttpGet("search")]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        //public async Task<ActionResult<List<WorkerWithQualification>>> SearchProposals(
+        //    [FromQuery] string query,
+        //    [FromQuery] int? filterCategoryId,
+        //    [FromQuery] Ubication ubication,
+        //    [FromQuery] PaginationDTO pagination
+        //    )
+        //{
+        //    try
+        //    {
+        //        var user = await GetEntity.GetUser(HttpContext, context);
+        //        if (user == null) return Unauthorized(new ErrorInfo { Field = "Error", Message = "Debe estar autenticado." });
 
 
-                var queryable = context.Proposals
-                   .Where(p => p.userId != user.Id)
-                   .Include(p => p.profession)
-                   .AsNoTracking();
+        //        var queryable = context.Proposals
+        //           .Where(p => p.userId != user.Id)
+        //           .Include(p => p.profession)
+        //           .AsNoTracking();
 
 
-                if (filterCategoryId != null)
-                {
-                    queryable = queryable.Where(p => p.profession.CategoryId == filterCategoryId);
-                }
+        //        if (filterCategoryId != null)
+        //        {
+        //            queryable = queryable.Where(p => p.profession.CategoryId == filterCategoryId);
+        //        }
 
-                if (!string.IsNullOrEmpty(query))
-                {
-                    queryable = queryable.Where(x => EF.Functions.Like(x.profession.Name, $"%{query}%"));
-                }
-                queryable = queryable
-                    .OrderByDescending(x => x.user.City == ubication.City)
-                    .ThenByDescending(x => x.user.Department == ubication.Department)
-                    .ThenByDescending(x => x.user.Province == ubication.Province)
-                    .ThenByDescending(x => x.user.Country == ubication.Country)
-                    .ThenByDescending(p => p.Date);
+        //        if (!string.IsNullOrEmpty(query))
+        //        {
+        //            queryable = queryable.Where(x => EF.Functions.Like(x.profession.Name, $"%{query}%"));
+        //        }
+        //        queryable = queryable
+        //            .OrderByDescending(x => x.user.City == ubication.City)
+        //            .ThenByDescending(x => x.user.Department == ubication.Department)
+        //            .ThenByDescending(x => x.user.Province == ubication.Province)
+        //            .ThenByDescending(x => x.user.Country == ubication.Country)
+        //            .ThenByDescending(p => p.Date);
 
-                await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
-                var proposals = await queryable.Paginate(pagination).ToListAsync();
+        //        await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
+        //        var proposals = await queryable.Paginate(pagination).ToListAsync();
 
-                var mapperProposals = mapper.Map<List<ProposalDTO>>(proposals);
+        //        var mapperProposals = mapper.Map<List<ProposalDTO>>(proposals);
 
-                return Ok(proposals);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
-                return StatusCode(500, "An error occurred");
-            }
-        }
+        //        return Ok(proposals);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
+        //        return StatusCode(500, "An error occurred");
+        //    }
+        //}
 
     }
 }

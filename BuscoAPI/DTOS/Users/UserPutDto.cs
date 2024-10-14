@@ -1,4 +1,6 @@
-﻿using BuscoAPI.Validations;
+﻿using BuscoAPI.Entities;
+using BuscoAPI.Validations;
+using NetTopologySuite.Geometries;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
@@ -16,12 +18,11 @@ namespace BuscoAPI.DTOS.Users
         [MinDate(Year = 1950, Month = 1, Day = 1, ErrorMessage = "The date must be after January 1, 1950")]
         [MaxDate(YearsAgo = -18, ErrorMessage = "Must be at least 18 years old")]
         public DateTime Birthdate { get; set; }
+        [Range(-90,90)]
         [Required]
-        public string Country { get; set; }
+        public double Latitude { get; set; }
+        [Range(-180, 180)]
         [Required]
-        public string Province { get; set; }
-        [Required]
-        public string Department { get; set; }
-        public string City { get; set; }
+        public double Longitude { get; set; }
     }
 }

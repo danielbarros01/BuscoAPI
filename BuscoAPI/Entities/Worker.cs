@@ -32,7 +32,7 @@ namespace BuscoAPI.Entities
                     return 0;
                 }
 
-                return Qualifications.Average(q => q.Score);
+                return (float)Qualifications.Average(q => q.Score);
             }
         }
 

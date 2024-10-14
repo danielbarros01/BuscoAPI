@@ -13,11 +13,8 @@ namespace BuscoAPI.DTOS.Users
         public string Username { get; set; }
         public string Email { get; set; }
         public DateTime Birthdate { get; set; }
-        public string Country { get; set; }
-        public string Province { get; set; }
-        public string Department { get; set; }
-        public string City { get; set; }
-        public string? Image { get; set; }
+        public double Latitude {  get; set; }
+        public double Longitude {  get; set; }
         public int? VerificationCode { get; set; }
         public bool? Confirmed { get; set; } = false;
         [Column("google_id")]

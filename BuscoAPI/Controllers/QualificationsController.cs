@@ -32,7 +32,7 @@ namespace BuscoAPI.Controllers
                 var user = await GetEntity.GetUser(HttpContext, context);
                 if (user == null) { return Unauthorized(); }
 
-                var qualificationExists = await context.WorkerQualifications
+                var qualificationExists = await context.WorkerQualification
                     .AnyAsync(q => q.UserId == qualificationCreation.WorkerUserId && q.UserId == user.Id);
 
                 if (qualificationExists)
@@ -43,7 +43,7 @@ namespace BuscoAPI.Controllers
                 var qualification = mapper.Map<Qualification>(qualificationCreation);
                 qualification.UserId = user.Id;
 
-                context.WorkerQualifications.Add(qualification);
+                context.WorkerQualification.Add(qualification);
 
                 await context.SaveChangesAsync();
 
@@ -65,7 +65,7 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                var totalQueryable = context.WorkerQualifications
+                var totalQueryable = context.WorkerQualification
                     .Where(q => q.WorkerUserId == workerId)
                     .AsQueryable();
 
