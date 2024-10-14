@@ -22,9 +22,7 @@ namespace BuscoAPI.Entities
         [MinLength(6)]
         public string Password { get; set; }
         public DateTime Birthdate { get; set; }
-
         public Point Ubication { get; set; }
-
         [AllowNull]
         [Column("Image_path")]
         public string? Image { get; set; }

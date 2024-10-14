@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using NetTopologySuite.Geometries;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
@@ -18,7 +19,7 @@ namespace BuscoAPI.Entities
         [Column("image_path")]
         public string Image { get; set; }
         public bool? Status { get; set; }
-
+        public Point Ubication { get; set; }
 
         [Column("user_id")]
         public int userId { get; set; }

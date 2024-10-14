@@ -26,6 +26,13 @@ namespace BuscoAPI.DTOS.Proposals
         [Required]
         public decimal MaxBudget { get; set; }
 
+        [Range(-90,90)]
+        [Required]
+        public double Latitude { get; set; }
+        [Range(-180,180)]
+        [Required]
+        public double Longitude { get; set; }
+
         //[Required]
         [AllowNull]
         [FileSize(sizeMaxMb: 4)]

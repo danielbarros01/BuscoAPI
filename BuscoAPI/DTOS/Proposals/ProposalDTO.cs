@@ -1,4 +1,5 @@
 ﻿using BuscoAPI.Entities;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BuscoAPI.DTOS.Proposals
@@ -14,7 +15,10 @@ namespace BuscoAPI.DTOS.Proposals
         public decimal MaxBudget { get; set; }
         public string Image { get; set; }
         public bool? Status { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
 
+        public Profession profession { get; set; }
         public List<ApplicationDTO>? Applications { get; set; }
     }
 }

@@ -53,9 +53,13 @@ namespace BuscoAPI.Helpers
                 .ForMember(x => x.Profession, opt => opt.MapFrom(src => src.Profession));
 
             CreateMap<ProposalCreationDTO, Proposal>()
-                .ForMember(x => x.Image, opt => opt.Ignore());
+                .ForMember(x => x.Image, opt => opt.Ignore())
+                .ForMember(x => x.Ubication, x => x.MapFrom(y =>
+                     geometryFactory.CreatePoint(new Coordinate(y.Longitude, y.Latitude))));
 
-            CreateMap<Proposal, ProposalDTO>();
+            CreateMap<Proposal, ProposalDTO>()
+                .ForMember(x => x.Latitude, x => x.MapFrom(y => y.Ubication.Y))
+                .ForMember(x => x.Longitude, x => x.MapFrom(y => y.Ubication.X));
 
             CreateMap<Application, ApplicationDTO>();
 
