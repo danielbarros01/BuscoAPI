@@ -19,7 +19,7 @@ var startup = new Startup(builder.Configuration);
 
 startup.ConfigureServices(builder.Services);
 
-builder.WebHost.UseUrls("http://localhost:5029"/*, "http://192.168.100.7:5029"*/, "http://*:5029");
+builder.WebHost.UseUrls("http://localhost:5029", "http://192.168.100.7:5029", "http://*:5029");
 
 var app = builder.Build();
 

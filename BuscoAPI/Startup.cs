@@ -1,4 +1,6 @@
 ﻿
+using AutoMapper;
+using BuscoAPI.Helpers;
 using BuscoAPI.RealTime;
 using BuscoAPI.Services;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -6,6 +8,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
 using System;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -32,7 +36,7 @@ namespace BuscoAPI
                     options.JsonSerializerOptions.IncludeFields = true;
                 }
             );
-            
+
             services.AddSignalR();
 
             services.AddHttpContextAccessor();
@@ -47,11 +51,9 @@ namespace BuscoAPI
                 options.UseMySql(
                     configuration["ConnectionStrings:MySqlConnection"],
                     ServerVersion.AutoDetect(configuration["ConnectionStrings:MySqlConnection"]),
-                    mySqlOptions => mySqlOptions.UseNetTopologySuite() 
+                    mySqlOptions => mySqlOptions.UseNetTopologySuite()
                 )
             );
-
-
 
             services.AddAuthentication(options =>
             {
@@ -80,6 +82,16 @@ namespace BuscoAPI
                 });
 
             services.AddScoped<IEmailService, EmailService>();
+
+            services.AddSingleton<GeometryFactory>(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
+
+            services.AddSingleton(provider =>
+                new MapperConfiguration(config =>
+                {
+                    var geometryFactory = provider.GetRequiredService<GeometryFactory>();
+                    config.AddProfile(new AutoMapperProfiles(geometryFactory));
+                }).CreateMapper()
+            );
         }
 
         public void Configure(WebApplication app)

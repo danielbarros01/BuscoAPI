@@ -13,10 +13,8 @@ namespace BuscoAPI.Helpers
 {
     public class AutoMapperProfiles : Profile
     {
-        public AutoMapperProfiles()
+        public AutoMapperProfiles(GeometryFactory geometryFactory)
         {
-            var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
-
             CreateMap<UserPutDto, User>()
                 .ForMember(x => x.Image, options => options.Ignore())
                 .ForMember(x => x.Ubication, x => x.MapFrom(y =>
