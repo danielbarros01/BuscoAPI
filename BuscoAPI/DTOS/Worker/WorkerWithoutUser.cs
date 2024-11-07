@@ -1,4 +1,5 @@
-﻿using BuscoAPI.Entities;
+﻿using BuscoAPI.DTOS.Users;
+using BuscoAPI.Entities;
 
 namespace BuscoAPI.DTOS.Worker
 {
@@ -9,6 +10,9 @@ namespace BuscoAPI.DTOS.Worker
         public int YearsExperience { get; set; }
         public string WebPage { get; set; }
         public string Description { get; set; }
-        public List<WorkersProfessions> WorkersProfessions { get; set; }
+        public float? AverageQualification { get; set; }
+        public List<Profession> Professions { get; set; }
+
+        //public List<WorkersProfessions> WorkersProfessions { get; set; }
     }
 }

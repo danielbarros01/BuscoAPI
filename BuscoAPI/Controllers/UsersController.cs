@@ -79,9 +79,9 @@ namespace BuscoAPI.Controllers
 
                 var userToken = await TokenHelper.BuildToken(userCreation, context, configuration);
 
-                var emailReq = SendEmails.BuildEmailVerificationCode(verificationCode, "register", user.Username);
-                emailReq.ToEmail = userCreation.Email;
-                emailService.SendEmail(emailReq);
+                //var emailReq = SendEmails.BuildEmailVerificationCode(verificationCode, "register", user.Username);
+                //emailReq.ToEmail = userCreation.Email;
+                //emailService.SendEmail(emailReq);
 
                 return userToken;
             }

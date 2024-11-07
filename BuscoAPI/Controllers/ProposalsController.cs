@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
+using System.Drawing;
 
 namespace BuscoAPI.Controllers
 {
@@ -19,13 +21,19 @@ namespace BuscoAPI.Controllers
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
         private readonly IFileStore fileStore;
-        private readonly string container = "proposals"; 
+        private readonly GeometryFactory geometryFactory;
+        private readonly string container = "proposals";
 
-        public ProposalsController(ApplicationDbContext context, IMapper mapper, IFileStore fileStore)
+        public ProposalsController(ApplicationDbContext context,
+            IMapper mapper,
+            IFileStore fileStore,
+            GeometryFactory geometryFactory
+            )
         {
             this.context = context;
             this.mapper = mapper;
             this.fileStore = fileStore;
+            this.geometryFactory = geometryFactory;
         }
 
         [HttpPost(Name = "CreateProposal")]
@@ -119,7 +127,7 @@ namespace BuscoAPI.Controllers
                     using (var memoryStream = new MemoryStream())
                     {
                         await image.CopyToAsync(memoryStream);
-                        var content = memoryStream.ToArray(); 
+                        var content = memoryStream.ToArray();
                         var extension = Path.GetExtension(image.FileName);
 
                         proposal.Image = await fileStore.SaveFile(
@@ -222,7 +230,9 @@ namespace BuscoAPI.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("recommendations")]
         public async Task<ActionResult<List<ProposalDTO>>> GetRecommendedProposals(
-            [FromQuery] PaginationDTO pagination
+            [FromQuery] PaginationDTO pagination,
+            [FromQuery] double? latitude,
+            [FromQuery] double? longitude
             )
         {
             try
@@ -236,12 +246,19 @@ namespace BuscoAPI.Controllers
                     return Forbid();
                 }
 
+                var ubicationSelected = (latitude.HasValue && longitude.HasValue)
+                    ? geometryFactory.CreatePoint(new Coordinate(longitude.Value, latitude.Value))
+                    : user.Ubication;
+
+                /*Actualizar, filtrar si hay primero de mi profesion, despues de mi categoria
+                 y despues de cualquiera*/
+
                 var queryable = context.Proposals
-                    .Where(x => x.Status == null && x.userId != user.Id) //null significa que esta sin trabajador, ergo Disponible
-                    .Include(x => x.user)
-                    .Include(x => x.profession)
-                    .OrderBy(x => x.Ubication.Distance(user.Ubication))
-                    .AsQueryable();
+                     .Where(x => x.Status == null && x.userId != user.Id) //null significa que esta sin trabajador, ergo Disponible
+                     .Include(x => x.user)
+                     .Include(x => x.profession)
+                     .OrderBy(x => x.Ubication.Distance(ubicationSelected))
+                     .AsNoTracking();
 
                 await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
 
@@ -331,7 +348,9 @@ namespace BuscoAPI.Controllers
             [FromQuery] string query,
             [FromQuery] int? filterCategoryId,
             [FromQuery] Ubication ubication,
-            [FromQuery] PaginationDTO pagination
+            [FromQuery] PaginationDTO pagination,
+            [FromQuery] double? latitude,
+            [FromQuery] double? longitude
             )
         {
             try
@@ -339,6 +358,9 @@ namespace BuscoAPI.Controllers
                 var user = await GetEntity.GetUser(HttpContext, context);
                 if (user == null) return Unauthorized(new ErrorInfo { Field = "Error", Message = "Debe estar autenticado." });
 
+                var ubicationSelected = (latitude.HasValue && longitude.HasValue)
+                    ? geometryFactory.CreatePoint(new Coordinate(longitude.Value, latitude.Value))
+                    : user.Ubication;
 
                 var queryable = context.Proposals
                    .Where(p => p.userId != user.Id)
@@ -355,8 +377,9 @@ namespace BuscoAPI.Controllers
                 {
                     queryable = queryable.Where(x => EF.Functions.Like(x.profession.Name, $"%{query}%"));
                 }
+
                 queryable = queryable
-                    .OrderBy(x => x.Ubication.Distance(user.Ubication))
+                    .OrderBy(p => p.Ubication.Distance(ubicationSelected))
                     .ThenByDescending(p => p.Date);
 
                 await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);

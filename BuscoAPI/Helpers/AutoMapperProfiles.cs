@@ -41,10 +41,10 @@ namespace BuscoAPI.Helpers
                 .ForMember(x => x.Professions, opt => opt.MapFrom(src => src.WorkersProfessions.Select(x => x.Profession)));
 
             CreateMap<Worker, WorkerWithoutUser>()
-                .ForMember(x => x.WorkersProfessions, opt => opt.MapFrom(src => src.WorkersProfessions));
+                .ForMember(x => x.Professions, opt => opt.MapFrom(src => src.WorkersProfessions.Select(x => x.Profession)));
 
-            CreateMap<Worker, WorkerWithQualification>()
-                .ForMember(x => x.WorkersProfessions, opt => opt.MapFrom(src => src.WorkersProfessions));
+            //CreateMap<Worker, WorkerWithQualification>()
+            //    .ForMember(x => x.WorkersProfessions, opt => opt.MapFrom(src => src.WorkersProfessions));
 
 
             CreateMap<WorkersProfessions, WorkersProfessionsDTO>()

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
 using System.Security.Claims;
 
 
@@ -28,11 +29,13 @@ namespace BuscoAPI.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
+        private readonly GeometryFactory geometryFactory;
 
-        public WorkersController(ApplicationDbContext context, IMapper mapper)
+        public WorkersController(ApplicationDbContext context, IMapper mapper, GeometryFactory geometryFactory)
         {
             this.context = context;
             this.mapper = mapper;
+            this.geometryFactory = geometryFactory;
         }
 
         [HttpPost]
@@ -116,12 +119,20 @@ namespace BuscoAPI.Controllers
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("recommendations")]
-        public async Task<ActionResult<List<WorkerDTO>>> GetRecommendedWorkers([FromQuery] PaginationDTO pagination)
+        public async Task<ActionResult<List<WorkerDTO>>> GetRecommendedWorkers(
+            [FromQuery] PaginationDTO pagination,
+            [FromQuery] double? latitude,
+            [FromQuery] double? longitude
+            )
         {
             try
             {
                 var user = await GetEntity.GetUser(HttpContext, context);
                 if (user == null) return Unauthorized(new ErrorInfo { Field = "Error", Message = "Debe estar autenticado." });
+
+                var ubicationSelected = (latitude.HasValue && longitude.HasValue)
+                    ? geometryFactory.CreatePoint(new Coordinate(longitude.Value, latitude.Value))
+                    : user.Ubication;
 
                 var queryable = context.Workers
                     .Include(w => w.Qualifications)
@@ -129,9 +140,9 @@ namespace BuscoAPI.Controllers
                         .ThenInclude(wp => wp.Profession)
                     .Include(w => w.User)
                     .Where(w => w.UserId != user.Id)
-                    .OrderBy(w => w.User.Ubication.Distance(user.Ubication))
+                    .OrderBy(w => w.User.Ubication.Distance(ubicationSelected))
                     .AsNoTracking();
-                    
+
                 await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
 
                 var recommendedWorgingUsers = await queryable
@@ -156,8 +167,9 @@ namespace BuscoAPI.Controllers
             [FromQuery] string query,
             [FromQuery] int? filterCategoryId,
             [FromQuery] int? filterQualification,
-            [FromQuery] Ubication ubication,
-            [FromQuery] PaginationDTO pagination
+            [FromQuery] PaginationDTO pagination,
+            [FromQuery] double? latitude,
+            [FromQuery] double? longitude
             )
         {
             try
@@ -196,7 +208,11 @@ namespace BuscoAPI.Controllers
                         && w.Qualifications.Average(q => q.Score) < filterQualification + 1);
                 }
 
-                queryable = queryable.OrderBy(w => w.User.Ubication.Distance(user.Ubication));
+                var ubicationSelected = (latitude.HasValue && longitude.HasValue)
+                    ? geometryFactory.CreatePoint(new Coordinate(longitude.Value, latitude.Value))
+                    : user.Ubication;
+
+                queryable = queryable.OrderBy(w => w.User.Ubication.Distance(ubicationSelected));
 
                 await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
                 var workers = await queryable.Paginate(pagination).ToListAsync();

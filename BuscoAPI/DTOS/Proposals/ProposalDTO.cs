@@ -18,6 +18,7 @@ namespace BuscoAPI.DTOS.Proposals
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
+        public int userId { get; set; }
         public Profession profession { get; set; }
         public List<ApplicationDTO>? Applications { get; set; }
     }

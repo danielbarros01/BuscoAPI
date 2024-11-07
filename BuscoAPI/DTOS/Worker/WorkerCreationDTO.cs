@@ -28,7 +28,6 @@ namespace BuscoAPI.DTOS.Worker
         [Required]
         [AtLeastOneElement("Debes seleccionar por lo menos una profesión.")]
         public List<int> ProfessionsId { get; set;}
-        
-    //public int ProfessionId { get; set; }
+       
     }
 }

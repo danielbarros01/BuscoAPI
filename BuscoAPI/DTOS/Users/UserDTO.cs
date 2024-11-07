@@ -20,7 +20,7 @@ namespace BuscoAPI.DTOS.Users
         [Column("google_id")]
         public string? GoogleId { get; set; }
 
-        public WorkerWithQualification? Worker { get; set; }
+        public WorkerWithoutUser Worker { get; set; }
 
     }
 }
