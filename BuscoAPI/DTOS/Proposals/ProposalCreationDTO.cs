@@ -35,7 +35,7 @@ namespace BuscoAPI.DTOS.Proposals
 
         //[Required]
         [AllowNull]
-        [FileSize(sizeMaxMb: 4)]
+        [FileSize(sizeMaxMb: 8)]
         [FileTypeValidation(grupoTipoArchivo: FileType.Image)]
         public IFormFile Image { get; set; }
 

@@ -7,7 +7,7 @@ namespace BuscoAPI.DTOS.Users
     {
         [StringLength(20)]
         public string Username { get; set; }
-        [EmailAddress]
+        //[EmailAddress]
         public string Email { get; set; }
         [Required]
         [DataType(DataType.Password)]

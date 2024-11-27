@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BuscoAPI.DTOS.Chat;
+using BuscoAPI.DTOS.Notification;
 using BuscoAPI.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -105,6 +106,20 @@ namespace BuscoAPI.RealTime
 
             await Clients.User(userIdReceiver.ToString()).SendAsync("ReceiveMessageNotification", newMessage);
             await Clients.Users(userIds).SendAsync("ReceiveMessage", newMessage);
+        }
+
+        public async Task SendProposal(NotificationCreationDTO notificationDTO)
+        {
+            var userId = int.Parse(Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
+
+            var notification = mapper.Map<Notification>(notificationDTO);
+            notification.UserSenderId = userId;
+
+            context.Notifications.Add(notification);
+            await context.SaveChangesAsync();
+
+            await Clients.User(notificationDTO.UserReceiveId.ToString()).SendAsync("ReceiveNotification", notification);
         }
 
         public override Task OnConnectedAsync()

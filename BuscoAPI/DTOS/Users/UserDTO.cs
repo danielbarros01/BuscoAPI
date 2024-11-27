@@ -15,6 +15,7 @@ namespace BuscoAPI.DTOS.Users
         public DateTime Birthdate { get; set; }
         public double Latitude {  get; set; }
         public double Longitude {  get; set; }
+        public string? Image { get; set; }
         public int? VerificationCode { get; set; }
         public bool? Confirmed { get; set; } = false;
         [Column("google_id")]

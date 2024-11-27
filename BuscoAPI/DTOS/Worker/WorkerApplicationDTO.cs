@@ -11,7 +11,6 @@ namespace BuscoAPI.DTOS.Worker
         public string WebPage { get; set; }
         public string Description { get; set; }
         public List<WorkersProfessions> WorkersProfessions { get; set; }
-
         public UserApplicationDTO? User { get; set; }
     }
 }

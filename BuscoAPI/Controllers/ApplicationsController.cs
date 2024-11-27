@@ -185,7 +185,9 @@ namespace BuscoAPI.Controllers
                 var queryable = context.Applications
                     .Where(x => x.ProposalId == proposalId)
                     .Include(x => x.Worker)
-                    .ThenInclude(w => w.User)
+                        .ThenInclude(w => w.Qualifications)
+                    .Include(x => x.Worker)
+                        .ThenInclude(w => w.User)
                     .AsQueryable();
 
                 await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
@@ -204,7 +206,7 @@ namespace BuscoAPI.Controllers
         }
 
         [HttpGet("{proposalId}/accepted", Name = "GetApplicationAccepted")]
-        public async Task<ActionResult<Application>> GetApplicationAccepted(int proposalId)
+        public async Task<ActionResult<ApplicationDTO>> GetApplicationAccepted(int proposalId)
         {
             try
             {
@@ -220,11 +222,11 @@ namespace BuscoAPI.Controllers
                     .ThenInclude(w => w.User)
                     .FirstOrDefaultAsync(x => x.Status == true && x.ProposalId == proposalId);
 
-                var proposalDTO = mapper.Map<ApplicationDTO>(application);
+                var applicationDTO = mapper.Map<ApplicationDTO>(application);
 
-                return application;
+                return applicationDTO;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error 500: An error occurred: {ex.Message}");
                 return StatusCode(500, "An error occurred");

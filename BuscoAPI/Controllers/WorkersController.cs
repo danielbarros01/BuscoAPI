@@ -177,7 +177,6 @@ namespace BuscoAPI.Controllers
                 var user = await GetEntity.GetUser(HttpContext, context);
                 if (user == null) return Unauthorized(new ErrorInfo { Field = "Error", Message = "Debe estar autenticado." });
 
-
                 var queryable = context.Workers
                    .Where(w => w.UserId != user.Id)
                    .Include(w => w.User)
@@ -214,7 +213,9 @@ namespace BuscoAPI.Controllers
 
                 queryable = queryable.OrderBy(w => w.User.Ubication.Distance(ubicationSelected));
 
+                await HttpContext.InsertNumberOfRecords(queryable);
                 await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
+
                 var workers = await queryable.Paginate(pagination).ToListAsync();
 
                 var mapperWorkers = mapper.Map<List<WorkerDTO>>(workers);

@@ -62,10 +62,15 @@ namespace BuscoAPI.Controllers
 
                         if (authenticateResult.Principal != null)
                         {
-                            var googleIdExists = await context.Users.AnyAsync(x => x.Google_id == googleAccountId);
+                            var userExists = await context
+                                .Users.AnyAsync(x => x.Google_id == googleAccountId || x.Email == email);
 
-                            if (!googleIdExists)
+                            if (!userExists)
                             {
+                                //Verify that the username does not exist when registering
+                                //If a username exists, I need to create a new username
+                                //var 
+
                                 var user = new User
                                 {
                                     Email = email,

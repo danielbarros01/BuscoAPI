@@ -164,6 +164,12 @@ namespace BuscoAPI.Controllers
                 var proposal = await context.Proposals.FirstOrDefaultAsync(x => x.Id == id && x.userId == user.Id);
                 if (proposal == null) { return NotFound(new ErrorInfo { Field = "Error", Message = "No existe tal propuesta " }); }
 
+                //Si esta en proceso, o terminada con un trabajador vinculado no se debe poder eliminar
+                if(proposal.Status != null)
+                {
+                    return BadRequest("No se puede eliminar una propuesta ya vinculada con un trabajador");
+                }
+
                 context.Remove(proposal);
                 await context.SaveChangesAsync();
 
@@ -382,6 +388,7 @@ namespace BuscoAPI.Controllers
                     .OrderBy(p => p.Ubication.Distance(ubicationSelected))
                     .ThenByDescending(p => p.Date);
 
+                await HttpContext.InsertNumberOfRecords(queryable);
                 await HttpContext.InsertPageParameters(queryable, pagination.NumberRecordsPerPage);
                 var proposals = await queryable.Paginate(pagination).ToListAsync();
 

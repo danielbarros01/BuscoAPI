@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BuscoAPI.DTOS.Notification;
+using BuscoAPI.DTOS.Users;
 using BuscoAPI.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -32,6 +33,8 @@ namespace BuscoAPI.RealTime
 
             await Clients.User(notificationDTO.UserReceiveId.ToString()).SendAsync("ReceiveNotification", notification);
         }
+
+      
 
         public override Task OnConnectedAsync()
         {

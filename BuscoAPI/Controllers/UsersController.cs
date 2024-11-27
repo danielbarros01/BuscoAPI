@@ -47,18 +47,21 @@ namespace BuscoAPI.Controllers
         {
             try
             {
-                var userMailExists = await context.Users.AnyAsync(x => x.Email == userCreation.Email);
-                var userUsernameExists = await context.Users.AnyAsync(x => x.Username == userCreation.Username);
+                var username = userCreation.Username.Trim().ToLower();
+                var email = userCreation.Email.ToLower();
+
+                var userMailExists = await context.Users.AnyAsync(x => x.Email == email);
+                var userUsernameExists = await context.Users.AnyAsync(x => x.Username == username);
 
                 if (userMailExists || userUsernameExists)
                 {
                     var errors = new List<object>();
 
                     if (userMailExists)
-                        errors.Add(new ErrorInfo { Field = "email", Message = $"El email {userCreation.Email} ya existe." });
+                        errors.Add(new ErrorInfo { Field = "email", Message = $"El email {email} ya existe." });
 
                     if (userUsernameExists)
-                        errors.Add(new ErrorInfo { Field = "username", Message = $"El nombre de usuario {userCreation.Username} ya existe." });
+                        errors.Add(new ErrorInfo { Field = "username", Message = $"El nombre de usuario {username} ya existe." });
 
                     return BadRequest(errors);
                 }
@@ -68,9 +71,9 @@ namespace BuscoAPI.Controllers
 
                 var user = new User
                 {
-                    Email = userCreation.Email,
+                    Email = email,
                     Password = HashPassword.HashingPassword(userCreation.Password),
-                    Username = userCreation.Username,
+                    Username = username,
                     VerificationCode = verificationCode
                 };
 
@@ -79,9 +82,9 @@ namespace BuscoAPI.Controllers
 
                 var userToken = await TokenHelper.BuildToken(userCreation, context, configuration);
 
-                //var emailReq = SendEmails.BuildEmailVerificationCode(verificationCode, "register", user.Username);
-                //emailReq.ToEmail = userCreation.Email;
-                //emailService.SendEmail(emailReq);
+                var emailReq = SendEmails.BuildEmailVerificationCode(verificationCode, "register", user.Username);
+                emailReq.ToEmail = email;
+                emailService.SendEmail(emailReq);
 
                 return userToken;
             }

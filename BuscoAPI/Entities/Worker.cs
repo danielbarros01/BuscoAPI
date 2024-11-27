@@ -36,5 +36,10 @@ namespace BuscoAPI.Entities
             }
         }
 
+        public int? NumberOfQualifications
+        {
+            get => Qualifications != null ? Qualifications.Count() : null;
+        }
+
     }
 }

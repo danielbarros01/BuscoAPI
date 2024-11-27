@@ -11,9 +11,7 @@ namespace BuscoAPI.DTOS
         public int ProposalId { get; set; }
         public DateTime Date { get; set; } = DateTime.Now;
         public bool? Status { get; set; } = null;
-
-        public WorkerApplicationDTO? Worker { get; set; }
-
+        public WorkerDTO? Worker { get; set; }
         public ProposalDTO? Proposal { get; set; }
     }
 }
