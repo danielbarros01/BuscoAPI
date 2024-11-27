@@ -27,8 +27,7 @@ The activities planned within the system are:
 Contributions are welcome. Please open an issue or send a pull request to discuss any changes you wish to make.
 
 ## EER Diagram
-![dbEER](https://github.com/user-attachments/assets/9b12d63a-e359-46cc-962e-e23613accec8)
-
+![bd2](https://github.com/user-attachments/assets/01956b80-5a4d-491c-9ca1-c1158d3a400e)
 
 ## Endpoints
 
