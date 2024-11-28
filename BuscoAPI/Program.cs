@@ -37,8 +37,8 @@ using (var scope = app.Services.CreateScope())
     //DbInitializer.SeedUsers(context, geometryFactory);
     //await DbInitializer.SeedWorkers(context, mapper);
     //await DbInitializer.SeedProposals(context, geometryFactory);
-    //await DbInitializer.SeedProposals(context, geometryFactory, <ID>);
-    //await DbInitializer.SeedApplications(context, <ID>);
+    //await DbInitializer.SeedProposals(context, geometryFactory, 72);
+    //await DbInitializer.SeedApplications(context, 72);
     //await DbInitializer.SeedQualifications(context, geometryFactory);
 }
 

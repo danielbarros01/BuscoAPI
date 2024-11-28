@@ -85,7 +85,7 @@ namespace BuscoAPI.RealTime
             await Clients.User(userId.ToString()).SendAsync("Messages", messages);
         }
 
-        public async Task SendMessage(int userIdReceiver, string message)
+        public async Task SendMessage(int userIdReceiver, string message, string date)
         {
             var userId = int.Parse(Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
@@ -97,7 +97,7 @@ namespace BuscoAPI.RealTime
                 UserIdSender = userId,
                 UserIdReceiver = userIdReceiver,
                 Text = message,
-                DateAndTime = DateTime.UtcNow,
+                DateAndTime = DateTime.Parse(date),
                 UserSender = new User { Username = userName }
             };
 
