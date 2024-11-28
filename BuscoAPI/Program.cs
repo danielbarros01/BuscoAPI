@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using NetTopologySuite.Geometries;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -29,13 +30,16 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ApplicationDbContext>();
-    var sndgService = services.GetRequiredService<SNDGService>();
     var mapper = services.GetRequiredService<IMapper>();
+    var geometryFactory = services.GetRequiredService<GeometryFactory>();
 
     DbInitializer.SeedCategoriesAndProfessions(context);
-    //await DbInitializer.SeedUsers(context, sndgService);
+    //DbInitializer.SeedUsers(context, geometryFactory);
     //await DbInitializer.SeedWorkers(context, mapper);
-    //await DbInitializer.SeedProposals(context);
+    //await DbInitializer.SeedProposals(context, geometryFactory);
+    //await DbInitializer.SeedProposals(context, geometryFactory, <ID>);
+    //await DbInitializer.SeedApplications(context, <ID>);
+    //await DbInitializer.SeedQualifications(context, geometryFactory);
 }
 
 startup.Configure(app);

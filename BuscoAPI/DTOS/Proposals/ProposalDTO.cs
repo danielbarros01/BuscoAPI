@@ -1,4 +1,5 @@
-﻿using BuscoAPI.Entities;
+﻿using BuscoAPI.DTOS.Users;
+using BuscoAPI.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -21,5 +22,6 @@ namespace BuscoAPI.DTOS.Proposals
         public int userId { get; set; }
         public Profession profession { get; set; }
         public List<ApplicationDTO>? Applications { get; set; }
+        public UserWithoutWorker User { get; set; }
     }
 }
